@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,15 +8,15 @@ import { T } from "@/app/i18n/T";
 import type { TranslationKey } from "@/app/i18n/translations";
 
 type NavItem = {
-	key: TranslationKey;
-	icon: LucideIcon;
-	href: string;
-};
+	key: TranslationKey
+	icon: LucideIcon
+	href: string
+}
 
 type NavGroup = {
-	topic?: TranslationKey;
-	items: NavItem[];
-};
+	topic?: TranslationKey
+	items: NavItem[]
+}
 
 // Add a new group here to introduce another menu topic — every item
 // listed under it renders nested beneath that topic's label.
@@ -51,10 +51,10 @@ const navGroups: NavGroup[] = [
 			},
 		],
 	},
-];
+]
 
 const Navbar = () => {
-	const pathname = usePathname();
+	const pathname = usePathname()
 
 	return (
 		<nav className="flex-1 space-y-6 px-3 py-4">
@@ -67,7 +67,7 @@ const Navbar = () => {
 					)}
 					<div className="mt-2 space-y-1">
 						{group.items.map(({ key, icon: Icon, href }) => {
-							const active = pathname === href;
+							const active = pathname === href
 							return (
 								<Link
 									key={key}
@@ -81,13 +81,13 @@ const Navbar = () => {
 									<Icon className="h-4.5 w-4.5" />
 									<T k={key} />
 								</Link>
-							);
+							)
 						})}
 					</div>
 				</div>
 			))}
 		</nav>
-	);
-};
+	)
+}
 
-export default Navbar;
+export default Navbar

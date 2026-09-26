@@ -1,45 +1,45 @@
-"use client";
+"use client"
 
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 
-type Option = { value: string; label: string };
+type Option = { value: string; label: string }
 
-export function Select({
+export const Select = ({
 	value,
 	onChange,
 	options,
 	className,
 }: {
-	value: string;
-	onChange: (value: string) => void;
-	options: Option[];
-	className?: string;
-}) {
-	const [open, setOpen] = useState(false);
-	const ref = useRef<HTMLDivElement>(null);
+	value: string
+	onChange: (value: string) => void
+	options: Option[]
+	className?: string
+}) => {
+	const [open, setOpen] = useState(false)
+	const ref = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
-		if (!open) return;
+		if (!open) return
 
-		function handleClickOutside(event: MouseEvent) {
+		const handleClickOutside = (event: MouseEvent) => {
 			if (ref.current && !ref.current.contains(event.target as Node)) {
-				setOpen(false);
+				setOpen(false)
 			}
 		}
-		function handleKeyDown(event: KeyboardEvent) {
-			if (event.key === "Escape") setOpen(false);
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") setOpen(false)
 		}
 
-		document.addEventListener("mousedown", handleClickOutside);
-		document.addEventListener("keydown", handleKeyDown);
+		document.addEventListener("mousedown", handleClickOutside)
+		document.addEventListener("keydown", handleKeyDown)
 		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-			document.removeEventListener("keydown", handleKeyDown);
-		};
-	}, [open]);
+			document.removeEventListener("mousedown", handleClickOutside)
+			document.removeEventListener("keydown", handleKeyDown)
+		}
+	}, [open])
 
-	const selected = options.find((option) => option.value === value);
+	const selected = options.find((option) => option.value === value)
 
 	return (
 		<div ref={ref} className={`relative ${className ?? ""}`}>
@@ -62,18 +62,14 @@ export function Select({
 					className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
 				>
 					{options.map((option) => {
-						const isSelected = option.value === value;
+						const isSelected = option.value === value
 						return (
-							<li
-								key={option.value}
-								role="option"
-								aria-selected={isSelected}
-							>
+							<li key={option.value} role="option" aria-selected={isSelected}>
 								<button
 									type="button"
 									onClick={() => {
-										onChange(option.value);
-										setOpen(false);
+										onChange(option.value)
+										setOpen(false)
 									}}
 									className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors ${
 										isSelected
@@ -82,15 +78,13 @@ export function Select({
 									}`}
 								>
 									{option.label}
-									{isSelected && (
-										<Check className="h-4 w-4" />
-									)}
+									{isSelected && <Check className="h-4 w-4" />}
 								</button>
 							</li>
-						);
+						)
 					})}
 				</ul>
 			)}
 		</div>
-	);
+	)
 }

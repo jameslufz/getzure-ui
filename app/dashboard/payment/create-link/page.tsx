@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import { useState } from "react";
 import Link from "next/link";
@@ -7,39 +7,42 @@ import { ArrowLeft, Check, Copy, CircleCheck } from "lucide-react";
 import { T } from "@/app/i18n/T";
 import type { TranslationKey } from "@/app/i18n/translations";
 import { Select } from "@/app/components/Select";
+import { DatePicker } from "@/app/components/DatePicker";
+import { formatAmount } from "@/app/lib/format";
+import copy from "@/app/lib/copy";
 
 const CURRENCY_OPTIONS = [
 	{ value: "THB", label: "THB" },
 	{ value: "USD", label: "USD" },
-];
+]
 
-type Currency = "THB" | "USD";
+type Currency = "THB" | "USD"
 
 type FormValues = {
-	title: string;
-	amount: number;
-	currency: Currency;
-	description?: string;
-	expiresAt?: string;
-	customerEmail?: string;
-};
+	title: string
+	amount: number
+	currency: Currency
+	description?: string
+	expiresAt?: string
+	customerEmail?: string
+}
 
-function generatePaymentLink(title: string) {
+const generatePaymentLink = (title: string) => {
 	const slug = title
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, "-")
-		.replace(/(^-|-$)/g, "");
-	const id = Math.random().toString(36).slice(2, 8);
-	return `https://pay.getzure.com/${slug || "link"}-${id}`;
+		.replace(/(^-|-$)/g, "")
+	const id = Math.random().toString(36).slice(2, 8)
+	return `https://pay.getzure.com/${slug || "link"}-${id}`
 }
 
-function fieldErrorClass(hasError: boolean) {
+const fieldErrorClass = (hasError: boolean) => {
 	return hasError
 		? "border-rose-400 focus:border-rose-500 focus:ring-rose-500/20"
-		: "border-zinc-200 focus:border-teal-500 focus:ring-teal-500/20 dark:border-zinc-700";
+		: "border-zinc-200 focus:border-teal-500 focus:ring-teal-500/20 dark:border-zinc-700"
 }
 
-export default function CreatePaymentLinkPage() {
+const CreatePaymentLinkPage = () => {
 	const {
 		register,
 		handleSubmit,
@@ -47,35 +50,32 @@ export default function CreatePaymentLinkPage() {
 		reset,
 		formState: { errors },
 	} = useForm<FormValues>({
-		defaultValues: { currency: "THB" },
-	});
+		defaultValues: {
+			currency: "THB",
+		},
+	})
 
-	const [createdLink, setCreatedLink] = useState<string | null>(null);
-	const [copied, setCopied] = useState(false);
+	const [createdLink, setCreatedLink] = useState<string | null>(null)
+	const [copied, setCopied] = useState(false)
 
-	const values = useWatch({ control });
+	const values = useWatch({ control })
 
-	function onSubmit(data: FormValues) {
-		setCreatedLink(generatePaymentLink(data.title));
+	const onSubmit = (data: FormValues) => setCreatedLink(generatePaymentLink(data.title))
+
+	const handleCopy = () => {
+        if(!createdLink) return
+        copy(createdLink)
+		setCopied(true)
+		setTimeout(() => setCopied(false), 2000)
 	}
 
-	function handleCopy() {
-		if (!createdLink) return;
-		navigator.clipboard.writeText(createdLink);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
+	const handleReset = () => {
+		setCreatedLink(null)
+		setCopied(false)
+		reset()
 	}
 
-	function handleReset() {
-		setCreatedLink(null);
-		setCopied(false);
-		reset();
-	}
-
-	const formattedAmount = new Intl.NumberFormat("en-US", {
-		style: "currency",
-		currency: values.currency || "THB",
-	}).format(values.amount || 0);
+	const formattedAmount = formatAmount(values.amount || 0, values.currency || "THB")
 
 	return (
 		<div className="mx-auto max-w-5xl space-y-6">
@@ -135,11 +135,7 @@ export default function CreatePaymentLinkPage() {
 							</button>
 						</div>
 					) : (
-						<form
-							onSubmit={handleSubmit(onSubmit)}
-							className="space-y-5"
-							noValidate
-						>
+						<form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
 							<div>
 								<label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
 									<T k="paymentLink.form.title" />
@@ -147,19 +143,13 @@ export default function CreatePaymentLinkPage() {
 								<input
 									type="text"
 									{...register("title", {
-										required:
-											"paymentLink.form.error.required",
+										required: "paymentLink.form.error.required",
 									})}
 									className={`w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 dark:bg-zinc-900 dark:text-zinc-50 ${fieldErrorClass(!!errors.title)}`}
 								/>
 								{errors.title && (
 									<p className="mt-1 text-xs text-rose-500">
-										<T
-											k={
-												errors.title
-													.message as TranslationKey
-											}
-										/>
+										<T k={errors.title.message as TranslationKey} />
 									</p>
 								)}
 							</div>
@@ -173,25 +163,18 @@ export default function CreatePaymentLinkPage() {
 										type="number"
 										step="0.01"
 										{...register("amount", {
-											required:
-												"paymentLink.form.error.required",
+											required: "paymentLink.form.error.required",
 											valueAsNumber: true,
 											min: {
 												value: 1,
-												message:
-													"paymentLink.form.error.minAmount",
+												message: "paymentLink.form.error.minAmount",
 											},
 										})}
 										className={`w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 sm:w-40 dark:bg-zinc-900 dark:text-zinc-50 ${fieldErrorClass(!!errors.amount)}`}
 									/>
 									{errors.amount && (
 										<p className="mt-1 text-xs text-rose-500">
-											<T
-												k={
-													errors.amount
-														.message as TranslationKey
-												}
-											/>
+											<T k={errors.amount.message as TranslationKey} />
 										</p>
 									)}
 								</div>
@@ -230,10 +213,15 @@ export default function CreatePaymentLinkPage() {
 									<label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
 										<T k="paymentLink.form.expiresAt" />
 									</label>
-									<input
-										type="date"
-										{...register("expiresAt")}
-										className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+									<Controller
+										name="expiresAt"
+										control={control}
+										render={({ field }) => (
+											<DatePicker
+												value={field.value ?? ""}
+												onChange={field.onChange}
+											/>
+										)}
 									/>
 								</div>
 								<div>
@@ -245,20 +233,14 @@ export default function CreatePaymentLinkPage() {
 										{...register("customerEmail", {
 											pattern: {
 												value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-												message:
-													"paymentLink.form.error.invalidEmail",
+												message: "paymentLink.form.error.invalidEmail",
 											},
 										})}
 										className={`w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 dark:bg-zinc-900 dark:text-zinc-50 ${fieldErrorClass(!!errors.customerEmail)}`}
 									/>
 									{errors.customerEmail ? (
 										<p className="mt-1 text-xs text-rose-500">
-											<T
-												k={
-													errors.customerEmail
-														.message as TranslationKey
-												}
-											/>
+											<T k={errors.customerEmail.message as TranslationKey} />
 										</p>
 									) : (
 										<p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -298,9 +280,7 @@ export default function CreatePaymentLinkPage() {
 							{formattedAmount}
 						</p>
 						<p className="mt-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-							{values.title || (
-								<T k="paymentLink.preview.untitled" />
-							)}
+							{values.title || <T k="paymentLink.preview.untitled" />}
 						</p>
 						{values.description && (
 							<p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
@@ -322,5 +302,7 @@ export default function CreatePaymentLinkPage() {
 				</div>
 			</div>
 		</div>
-	);
+	)
 }
+
+export default CreatePaymentLinkPage

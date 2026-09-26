@@ -81,6 +81,6 @@ export const translations = {
 	},
 	"paymentLink.success.copy": { en: "Copy", th: "คัดลอก" },
 	"paymentLink.success.copied": { en: "Copied", th: "คัดลอกแล้ว" },
-} as const;
+} as const
 
-export type TranslationKey = keyof typeof translations;
+export type TranslationKey = keyof typeof translations

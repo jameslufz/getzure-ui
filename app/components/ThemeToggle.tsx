@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
 import { Moon, Sun } from "lucide-react";
 
-export function ThemeToggle() {
-	function toggle() {
-		const next = !document.documentElement.classList.contains("dark");
-		document.documentElement.classList.toggle("dark", next);
-		localStorage.setItem("theme", next ? "dark" : "light");
+export const ThemeToggle = () => {
+	const toggle = () => {
+		const next = !document.documentElement.classList.contains("dark")
+		document.documentElement.classList.toggle("dark", next)
+		localStorage.setItem("theme", next ? "dark" : "light")
 	}
 
 	return (
@@ -21,5 +21,5 @@ export function ThemeToggle() {
 				<Moon className="hidden h-2.5 w-2.5 text-teal-600 dark:block" />
 			</span>
 		</button>
-	);
+	)
 }

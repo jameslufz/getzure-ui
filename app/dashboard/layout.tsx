@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import { useState } from "react";
 import { ThemeToggle } from "@/app/components/ThemeToggle";
@@ -8,12 +8,8 @@ import { Search, Bell, Menu, X } from "lucide-react";
 import clsx from "clsx";
 import Navbar from "../components/main-layout/Navbar";
 
-export default function DashboardLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
-	const [mobileNavOpen, setMobileNavOpen] = useState(false);
+const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+	const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
 	return (
 		<div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -102,5 +98,7 @@ export default function DashboardLayout({
 				<main className="flex-1 p-4 sm:p-6">{children}</main>
 			</div>
 		</div>
-	);
+	)
 }
+
+export default DashboardLayout

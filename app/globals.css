@@ -11,9 +11,7 @@
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
-	--font-sans:
-		-apple-system, BlinkMacSystemFont, var(--font-noto-sans-thai),
-		sans-serif;
+	--font-sans: -apple-system, BlinkMacSystemFont, var(--font-noto-sans-thai), sans-serif;
 	--font-mono: var(--font-geist-mono);
 }
 

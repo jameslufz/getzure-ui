@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
 import { Languages } from "lucide-react";
 
-export function LanguageToggle() {
-	function toggle() {
-		const next = document.documentElement.lang === "th" ? "en" : "th";
-		document.documentElement.lang = next;
-		localStorage.setItem("lang", next);
+export const LanguageToggle = () => {
+	const toggle = () => {
+		const next = document.documentElement.lang === "th" ? "en" : "th"
+		document.documentElement.lang = next
+		localStorage.setItem("lang", next)
 	}
 
 	return (
@@ -20,5 +20,5 @@ export function LanguageToggle() {
 			<span className="th:hidden">EN</span>
 			<span className="hidden th:inline">TH</span>
 		</button>
-	);
+	)
 }
