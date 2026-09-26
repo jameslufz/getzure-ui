@@ -33,7 +33,7 @@ export default function DashboardLayout({
 			>
 				<div className="flex h-16 items-center justify-between gap-2 border-b border-zinc-200 px-5 dark:border-zinc-800">
 					<div className="flex items-center gap-2">
-						<div className="flex h-8 w-8 items-center justify-center rounded-md bg-indigo-600 text-sm font-bold text-white">
+						<div className="flex h-8 w-8 items-center justify-center rounded-md bg-teal-600 text-sm font-bold text-white">
 							G
 						</div>
 						<span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">

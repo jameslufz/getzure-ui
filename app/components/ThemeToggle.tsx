@@ -14,11 +14,11 @@ export function ThemeToggle() {
 			type="button"
 			aria-label="Toggle dark mode"
 			onClick={toggle}
-			className="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full bg-zinc-300 transition-colors dark:bg-indigo-600"
+			className="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full bg-zinc-300 transition-colors dark:bg-teal-600"
 		>
 			<span className="flex h-4 w-4 translate-x-1 items-center justify-center rounded-full bg-white transition-transform dark:translate-x-6">
 				<Sun className="h-2.5 w-2.5 text-amber-500 dark:hidden" />
-				<Moon className="hidden h-2.5 w-2.5 text-indigo-600 dark:block" />
+				<Moon className="hidden h-2.5 w-2.5 text-teal-600 dark:block" />
 			</span>
 		</button>
 	);

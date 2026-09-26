@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { ArrowLeft, Check, Copy, CircleCheck } from "lucide-react";
 import { T } from "@/app/i18n/T";
 import type { TranslationKey } from "@/app/i18n/translations";
+import { Select } from "@/app/components/Select";
+
+const CURRENCY_OPTIONS = [
+	{ value: "THB", label: "THB" },
+	{ value: "USD", label: "USD" },
+];
 
 type Currency = "THB" | "USD";
 
@@ -30,7 +36,7 @@ function generatePaymentLink(title: string) {
 function fieldErrorClass(hasError: boolean) {
 	return hasError
 		? "border-rose-400 focus:border-rose-500 focus:ring-rose-500/20"
-		: "border-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-zinc-700";
+		: "border-zinc-200 focus:border-teal-500 focus:ring-teal-500/20 dark:border-zinc-700";
 }
 
 export default function CreatePaymentLinkPage() {
@@ -105,7 +111,7 @@ export default function CreatePaymentLinkPage() {
 								<button
 									type="button"
 									onClick={handleCopy}
-									className="flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+									className="flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium text-teal-600 hover:bg-teal-50 dark:text-teal-400 dark:hover:bg-teal-500/10"
 								>
 									{copied ? (
 										<>
@@ -123,7 +129,7 @@ export default function CreatePaymentLinkPage() {
 							<button
 								type="button"
 								onClick={handleReset}
-								className="mt-6 text-sm font-medium text-indigo-600 dark:text-indigo-400"
+								className="mt-6 text-sm font-medium text-teal-600 dark:text-teal-400"
 							>
 								<T k="paymentLink.form.reset" />
 							</button>
@@ -193,13 +199,18 @@ export default function CreatePaymentLinkPage() {
 									<label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
 										<T k="paymentLink.form.currency" />
 									</label>
-									<select
-										{...register("currency")}
-										className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 sm:w-28 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-									>
-										<option value="THB">THB</option>
-										<option value="USD">USD</option>
-									</select>
+									<Controller
+										name="currency"
+										control={control}
+										render={({ field }) => (
+											<Select
+												value={field.value}
+												onChange={field.onChange}
+												options={CURRENCY_OPTIONS}
+												className="sm:w-28"
+											/>
+										)}
+									/>
 								</div>
 							</div>
 
@@ -210,7 +221,7 @@ export default function CreatePaymentLinkPage() {
 								<textarea
 									rows={3}
 									{...register("description")}
-									className="w-full resize-none rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+									className="w-full resize-none rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
 								/>
 							</div>
 
@@ -222,7 +233,7 @@ export default function CreatePaymentLinkPage() {
 									<input
 										type="date"
 										{...register("expiresAt")}
-										className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+										className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
 									/>
 								</div>
 								<div>
@@ -260,7 +271,7 @@ export default function CreatePaymentLinkPage() {
 							<div className="flex justify-end pt-2">
 								<button
 									type="submit"
-									className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+									className="rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
 								>
 									<T k="paymentLink.form.submit" />
 								</button>
@@ -275,7 +286,7 @@ export default function CreatePaymentLinkPage() {
 					</p>
 					<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
 						<div className="flex items-center gap-2">
-							<div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600 text-xs font-bold text-white">
+							<div className="flex h-7 w-7 items-center justify-center rounded-md bg-teal-600 text-xs font-bold text-white">
 								G
 							</div>
 							<span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
@@ -300,7 +311,7 @@ export default function CreatePaymentLinkPage() {
 						<button
 							type="button"
 							disabled
-							className="mt-6 w-full cursor-default rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white opacity-90"
+							className="mt-6 w-full cursor-default rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white opacity-90"
 						>
 							<T k="paymentLink.preview.payButton" />
 						</button>
