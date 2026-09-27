@@ -1,0 +1,45 @@
+"use client"
+
+import { authClient } from "@/app/lib/auth-client";
+import { T } from "@/app/i18n/T";
+
+const GoogleIcon = () => (
+	<svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+		<path
+			fill="#4285F4"
+			d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47c-.28 1.5-1.13 2.78-2.4 3.63v3.02h3.89c2.27-2.09 3.58-5.17 3.58-8.84Z"
+		/>
+		<path
+			fill="#34A853"
+			d="M12 24c3.24 0 5.96-1.07 7.95-2.9l-3.89-3.02c-1.08.72-2.46 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.94H1.27v3.11C3.25 21.3 7.31 24 12 24Z"
+		/>
+		<path
+			fill="#FBBC05"
+			d="M5.29 14.29a7.2 7.2 0 0 1 0-4.58V6.6H1.27a12 12 0 0 0 0 10.8l4.02-3.11Z"
+		/>
+		<path
+			fill="#EA4335"
+			d="M12 4.77c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.7 1.27 6.6l4.02 3.11C6.23 6.88 8.88 4.77 12 4.77Z"
+		/>
+	</svg>
+)
+
+export const GoogleSignInButton = () => {
+	const handleClick = () => {
+		authClient.signIn.social({
+			provider: "google",
+			callbackURL: "/dashboard",
+		})
+	}
+
+	return (
+		<button
+			type="button"
+			onClick={handleClick}
+			className="flex w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+		>
+			<GoogleIcon />
+			<T k="auth.google">ดำเนินการต่อด้วย Google</T>
+		</button>
+	)
+}

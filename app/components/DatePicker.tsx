@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react";
+import clsx from "clsx";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 const MONTHS = [
@@ -139,14 +140,14 @@ export const DatePicker = ({
 	const month = MONTHS[viewDate.getMonth()]
 
 	return (
-		<div ref={ref} className={`relative ${className ?? ""}`}>
+		<div ref={ref} className={clsx("relative", className)}>
 			<button
 				ref={triggerRef}
 				type="button"
 				onClick={() => (open ? setOpen(false) : openPicker())}
 				aria-haspopup="dialog"
 				aria-expanded={open}
-				className="flex w-full items-center justify-between gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+				className="flex w-full items-center justify-between gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
 			>
 				{selected ? (
 					<span>
@@ -163,9 +164,10 @@ export const DatePicker = ({
 
 			{open && (
 				<div
-					className={`absolute z-10 w-72 rounded-md border border-zinc-200 bg-white p-3 shadow-lg dark:border-zinc-700 dark:bg-zinc-900 ${
-						placement === "top" ? "bottom-full mb-1" : "top-full mt-1"
-					}`}
+					className={clsx(
+						"absolute z-10 w-72 rounded-md border border-zinc-200 bg-white p-3 shadow-lg dark:border-zinc-700 dark:bg-zinc-900",
+						placement === "top" ? "bottom-full mb-1" : "top-full mt-1",
+					)}
 				>
 					<div className="flex items-center justify-between">
 						<button
@@ -218,15 +220,16 @@ export const DatePicker = ({
 										onChange(toISODate(date))
 										setOpen(false)
 									}}
-									className={`flex h-8 w-8 items-center justify-center rounded-md text-sm transition-colors ${
+									className={clsx(
+										"flex h-8 w-8 items-center justify-center rounded-md text-sm transition-colors",
 										!inMonth
 											? "cursor-default text-zinc-300 dark:text-zinc-700"
 											: isSelected
 												? "bg-teal-600 font-medium text-white"
 												: isToday
 													? "font-medium text-teal-600 ring-1 ring-teal-500/40 dark:text-teal-400"
-													: "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
-									}`}
+													: "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+									)}
 								>
 									{date.getDate()}
 								</button>

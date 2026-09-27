@@ -1,0 +1,16 @@
+services:
+    postgres:
+        image: postgres:17
+        container_name: getzure-postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: getzure
+            POSTGRES_PASSWORD: getzure
+            POSTGRES_DB: getzure_master
+        ports:
+            - "5432:5432"
+        volumes:
+            - getzure-postgres-data:/var/lib/postgresql/data
+
+volumes:
+    getzure-postgres-data:

@@ -10,9 +10,11 @@
 		"format": "prettier --write . && node scripts/fix-import-semicolons.mjs"
 	},
 	"dependencies": {
+		"better-auth": "^1.7.6",
 		"clsx": "^2.1.1",
 		"lucide-react": "^1.48.0",
 		"next": "16.3.6",
+		"pg": "^8.23.0",
 		"react": "19.2.8",
 		"react-dom": "19.2.8",
 		"react-hook-form": "^7.89.0"
@@ -20,6 +22,7 @@
 	"devDependencies": {
 		"@tailwindcss/postcss": "^4",
 		"@types/node": "^20",
+		"@types/pg": "^8.23.1",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"eslint": "^9",
@@ -27,5 +30,8 @@
 		"prettier": "^3.9.9",
 		"tailwindcss": "^4",
 		"typescript": "^5"
+	},
+	"allowScripts": {
+		"better-sqlite3@13.0.3": true
 	}
 }
