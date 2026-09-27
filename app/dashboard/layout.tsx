@@ -12,12 +12,15 @@ import Navbar from "../components/main-layout/Navbar";
 
 const getInitials = (name?: string | null) => {
 	if (!name) return "?"
-	return name
-		.split(" ")
-		.map((word) => word[0])
-		.slice(0, 2)
-		.join("")
-		.toUpperCase()
+	const words = name.split(" ").filter(Boolean)
+	if (words.length > 1) {
+		return words
+			.slice(0, 2)
+			.map((word) => word[0])
+			.join("")
+			.toUpperCase()
+	}
+	return name.slice(0, 2).toUpperCase()
 }
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {

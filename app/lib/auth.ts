@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { phoneNumber } from "better-auth/plugins";
 import { Pool } from "pg";
 
 export const auth = betterAuth({
@@ -14,4 +15,18 @@ export const auth = betterAuth({
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
 		},
 	},
+	plugins: [
+		phoneNumber({
+			sendOTP: ({ phoneNumber, code }) => {
+				// DEV STUB: no SMS provider wired up yet — log the code
+				// instead of sending a real text. Swap this for a real
+				// provider (Twilio, etc.) before going to production.
+				console.log(`[dev] OTP for ${phoneNumber}: ${code}`)
+			},
+			signUpOnVerification: {
+				getTempEmail: (phoneNumber) => `${phoneNumber}@phone.getzure.com`,
+				getTempName: (phoneNumber) => phoneNumber,
+			},
+		}),
+	],
 })
