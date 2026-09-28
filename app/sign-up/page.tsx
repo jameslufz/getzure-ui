@@ -1,22 +1,17 @@
 "use client"
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { authClient } from "@/app/lib/auth-client";
 import { ThemeToggle } from "@/app/components/ThemeToggle";
 import { LanguageToggle } from "@/app/components/LanguageToggle";
 import { T } from "@/app/i18n/T";
 import { GoogleSignInButton } from "@/app/components/GoogleSignInButton";
-
-type PhoneFormValues = {
-	phoneNumber: string
-}
-
-type OtpFormValues = {
-	code: string
-}
+import { NumericFormat } from "react-number-format";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import FormProfile from "../components/pages/signup/FormProfile";
 
 const fieldClass = (hasError: boolean) => {
 	return `w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-900 outline-hidden focus:ring-2 dark:bg-zinc-900 dark:text-zinc-50 ${
@@ -26,42 +21,79 @@ const fieldClass = (hasError: boolean) => {
 	}`
 }
 
+const phoneFormSchema = z.object({
+	phoneNumber: z
+		.string({ error: "กรุณากรอกหมายเลขเบอร์โทรศัพท์" })
+		.regex(/^(06|08|09)\d{8}$/, { error: "รูปแบบเบอร์โทรไม่ถูกต้อง" }),
+})
+
+const otpFormSchema = z.object({
+	code: z
+		.string()
+		.min(6, { error: "รหัส OTP ต้องมี 6 หลัก" })
+		.max(6, { error: "รหัส OTP ต้องมี 6 หลัก" }),
+})
+
+const profileFormSchema = z.object({
+	firstname: z.string({ error: "กรุณากรอกชื่อจริง" }).min(1, { error: "กรุณากรอกชื่อจริง" }),
+	middlename: z.string().optional(),
+	lastname: z.string({ error: "กรุณากรอกนามสกุล" }).min(1, { error: "กรุณากรอกนามสกุล" }),
+})
+
+export type TPhoneForm = z.infer<typeof phoneFormSchema>
+export type TOtpForm = z.infer<typeof otpFormSchema>
+export type TProfileForm = z.infer<typeof profileFormSchema>
+
+const sendPhoneOtp = async (phoneNumber: string) => {
+	const res = await fetch("/api/send-phone-otp", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ phoneNumber }),
+	})
+	if (!res.ok) throw new Error("failed to send otp")
+	const data: { message: string; otpRef?: string } = await res.json()
+	return data
+}
+
 const SignUpPage = () => {
-	const router = useRouter()
-	const [step, setStep] = useState<"phone" | "otp">("phone")
+	const [step, setStep] = useState<"phone" | "otp" | "profile">("phone")
 	const [phoneNumber, setPhoneNumber] = useState("")
+	const [otpRef, setOtpRef] = useState("")
 	const [serverError, setServerError] = useState(false)
 	const [loading, setLoading] = useState(false)
 
-	const phoneForm = useForm<PhoneFormValues>()
-	const otpForm = useForm<OtpFormValues>()
+    const handleSetServerError = (v: boolean) => setServerError(v)
+    const handleSetLoading = (v: boolean) => setLoading(v)
 
-	const onSendCode = (data: PhoneFormValues) => {
+	const phoneForm = useForm<TPhoneForm>({ resolver: zodResolver(phoneFormSchema) })
+	const otpForm = useForm<TOtpForm>({ resolver: zodResolver(otpFormSchema) })
+	const profileForm = useForm<TProfileForm>({ resolver: zodResolver(profileFormSchema) })
+
+	const handleRequestOTP: SubmitHandler<TPhoneForm> = async (data) => {
 		setServerError(false)
 		setLoading(true)
-		authClient.phoneNumber.sendOtp(
-			{ phoneNumber: data.phoneNumber },
-			{
-				onSuccess: () => {
-					setPhoneNumber(data.phoneNumber)
-					setStep("otp")
-					setLoading(false)
-				},
-				onError: () => {
-					setLoading(false)
-					setServerError(true)
-				},
-			},
-		)
+		try {
+			const { otpRef } = await sendPhoneOtp(data.phoneNumber)
+			setPhoneNumber(data.phoneNumber)
+			setOtpRef(otpRef || "")
+			setStep("otp")
+		} catch {
+			setServerError(true)
+		} finally {
+			setLoading(false)
+		}
 	}
 
-	const onVerify = (data: OtpFormValues) => {
+	const handleVerify: SubmitHandler<TOtpForm> = (data) => {
 		setServerError(false)
 		setLoading(true)
 		authClient.phoneNumber.verify(
 			{ phoneNumber, code: data.code },
 			{
-				onSuccess: () => router.push("/dashboard"),
+				onSuccess: () => {
+					setLoading(false)
+					setStep("profile")
+				},
 				onError: () => {
 					setLoading(false)
 					setServerError(true)
@@ -76,8 +108,13 @@ const SignUpPage = () => {
 		otpForm.reset()
 	}
 
-	const handleResendCode = () => {
-		authClient.phoneNumber.sendOtp({ phoneNumber })
+	const handleResendCode = async () => {
+		try {
+			const { otpRef } = await sendPhoneOtp(phoneNumber)
+			setOtpRef(otpRef || "")
+		} catch {
+			setServerError(true)
+		}
 	}
 
 	return (
@@ -93,12 +130,27 @@ const SignUpPage = () => {
 						G
 					</div>
 					<div>
-						<h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-							<T k="auth.signUp.title">สร้างบัญชีใหม่</T>
-						</h1>
-						<p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-							<T k="auth.signUp.subtitle">เริ่มรับชำระเงินด้วย Getzure</T>
-						</p>
+						{step === "profile" ? (
+							<>
+								<h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+									<T k="auth.signUp.profile.title">บอกชื่อของคุณให้เราหน่อย</T>
+								</h1>
+								<p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+									<T k="auth.signUp.profile.subtitle">
+										ขั้นตอนสุดท้ายก่อนเข้าแดชบอร์ด
+									</T>
+								</p>
+							</>
+						) : (
+							<>
+								<h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+									<T k="auth.signUp.title">สร้างบัญชีใหม่</T>
+								</h1>
+								<p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+									<T k="auth.signUp.subtitle">เริ่มรับชำระเงินด้วย Getzure</T>
+								</p>
+							</>
+						)}
 					</div>
 				</div>
 
@@ -109,9 +161,17 @@ const SignUpPage = () => {
 						</p>
 					)}
 
-					{step === "phone" ? (
+					{step === "profile" ? (
+                        <FormProfile
+                            isLoading={loading}
+                            profileForm={profileForm}
+                            fieldClass={fieldClass}
+                            setServerError={handleSetServerError}
+                            setLoading={handleSetLoading}
+                        />
+					) : step === "phone" ? (
 						<form
-							onSubmit={phoneForm.handleSubmit(onSendCode)}
+							onSubmit={phoneForm.handleSubmit(handleRequestOTP)}
 							className="space-y-4"
 							noValidate
 						>
@@ -119,19 +179,30 @@ const SignUpPage = () => {
 								<label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
 									<T k="auth.form.phone">เบอร์โทรศัพท์</T>
 								</label>
-								<input
-									type="tel"
-									placeholder="+66812345678"
-									{...phoneForm.register("phoneNumber", {
-										required: true,
-										pattern: /^\+[1-9]\d{7,14}$/,
-									})}
-									className={fieldClass(!!phoneForm.formState.errors.phoneNumber)}
+								<Controller
+									name="phoneNumber"
+									control={phoneForm.control}
+									render={({ field }) => (
+										<NumericFormat
+											type="text"
+											allowLeadingZeros
+											allowNegative={false}
+											maxLength={10}
+											placeholder="0812345678"
+											value={field.value}
+											onValueChange={(values) => field.onChange(values.value)}
+											onBlur={field.onBlur}
+											className={fieldClass(
+												!!phoneForm.formState.errors.phoneNumber,
+											)}
+										/>
+									)}
 								/>
 								{phoneForm.formState.errors.phoneNumber && (
 									<p className="mt-1 text-xs text-rose-500">
 										<T k="auth.form.error.invalidPhone">
-											กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง เช่น +66812345678
+											{phoneForm.formState.errors.phoneNumber.message ||
+												"กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง เช่น +66812345678"}
 										</T>
 									</p>
 								)}
@@ -142,7 +213,7 @@ const SignUpPage = () => {
 								disabled={loading}
 								className="w-full rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-60"
 							>
-								<T k="auth.signUp.sendCode">ส่งรหัสยืนยัน</T>
+								<T k="auth.signUp.sendCode">ยืนยันหมายเลขเบอร์โทรศัพท์</T>
 							</button>
 
 							<div className="flex items-center gap-3">
@@ -157,7 +228,7 @@ const SignUpPage = () => {
 						</form>
 					) : (
 						<form
-							onSubmit={otpForm.handleSubmit(onVerify)}
+							onSubmit={otpForm.handleSubmit(handleVerify)}
 							className="space-y-4"
 							noValidate
 						>
@@ -165,6 +236,9 @@ const SignUpPage = () => {
 								<T k="auth.signUp.otpSentTo">เราได้ส่งรหัสไปที่</T>{" "}
 								<span className="font-medium text-zinc-900 dark:text-zinc-50">
 									{phoneNumber}
+								</span>{" "}
+								<span className="text-zinc-400 dark:text-zinc-500">
+									(Ref: {otpRef})
 								</span>
 							</p>
 
@@ -214,12 +288,14 @@ const SignUpPage = () => {
 					)}
 				</div>
 
-				<p className="mt-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
-					<T k="auth.signUp.haveAccount">มีบัญชีอยู่แล้ว?</T>{" "}
-					<Link href="/sign-in" className="font-medium text-teal-600 dark:text-teal-400">
-						<T k="auth.signUp.signIn">เข้าสู่ระบบ</T>
-					</Link>
-				</p>
+				{step !== "profile" && (
+					<p className="mt-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
+						<T k="auth.signUp.haveAccount">มีบัญชีอยู่แล้ว?</T>{" "}
+						<Link href="/sign-in" className="font-medium text-teal-600 dark:text-teal-400">
+							<T k="auth.signUp.signIn">เข้าสู่ระบบ</T>
+						</Link>
+					</p>
+				)}
 			</div>
 		</div>
 	)
