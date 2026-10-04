@@ -10,6 +10,7 @@ import { Select } from "@/app/components/Select";
 import { DatePicker } from "@/app/components/DatePicker";
 import { formatAmount } from "@/app/lib/format";
 import copy from "@/app/lib/copy";
+import { NumericFormat } from "react-number-format";
 
 const CURRENCY_OPTIONS = [
 	{ value: "THB", label: "THB" },
@@ -141,7 +142,6 @@ const CreatePaymentLinkPage = () => {
 									<T k="paymentLink.form.title">ชื่อรายการชำระเงิน</T>
 								</label>
 								<input
-									type="text"
 									{...register("title", { required: true })}
 									className={clsx(
 										"w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-900 outline-hidden focus:ring-2 dark:bg-zinc-900 dark:text-zinc-50",
@@ -162,19 +162,25 @@ const CreatePaymentLinkPage = () => {
 									<label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
 										<T k="paymentLink.form.amount">จำนวนเงิน</T>
 									</label>
-									<input
-										type="number"
-										step="0.01"
-										{...register("amount", {
-											required: true,
-											valueAsNumber: true,
-											min: 1,
-										})}
-										className={clsx(
-											"w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-900 outline-hidden focus:ring-2 sm:w-40 dark:bg-zinc-900 dark:text-zinc-50",
-											fieldErrorClass(!!errors.amount),
-										)}
-									/>
+                                    <Controller
+                                        name="amount"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <NumericFormat
+                                                thousandSeparator=","
+                                                decimalScale={0}
+                                                allowNegative={false}
+                                                allowLeadingZeros={false}
+                                                value={field.value}
+                                                onValueChange={(values) => field.onChange(values.value)}
+                                                onBlur={field.onBlur}
+                                                className={clsx(
+                                                    "w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-900 outline-hidden focus:ring-2 dark:bg-zinc-900 dark:text-zinc-50",
+                                                    fieldErrorClass(!!errors.amount),
+                                                )}
+                                            />
+                                        )}
+                                    />
 									{errors.amount && (
 										<p className="mt-1 text-xs text-rose-500">
 											{errors.amount.type === "min" ? (

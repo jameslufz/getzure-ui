@@ -136,7 +136,7 @@ const SignInPage = () => {
 						<div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
 					</div>
 
-					<GoogleSignInButton />
+					<GoogleSignInButton callbackURL="/sign-up" />
 				</form>
 
 				<p className="mt-4 text-center text-sm text-zinc-500 dark:text-zinc-400">

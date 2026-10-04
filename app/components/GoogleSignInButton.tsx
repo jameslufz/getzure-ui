@@ -24,11 +24,11 @@ const GoogleIcon = () => (
 	</svg>
 )
 
-export const GoogleSignInButton = () => {
+export const GoogleSignInButton = ({ callbackURL = "/dashboard" }: { callbackURL?: string }) => {
 	const handleClick = () => {
 		authClient.signIn.social({
 			provider: "google",
-			callbackURL: "/dashboard",
+			callbackURL,
 		})
 	}
 

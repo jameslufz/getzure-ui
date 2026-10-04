@@ -1,9 +1,11 @@
 import { betterAuth } from "better-auth";
 import { phoneNumber } from "better-auth/plugins";
 import crypto from "node:crypto";
+import { AsyncLocalStorage } from "node:async_hooks";
 import { pool } from "@/app/lib/db";
 
-export const otpRefStore = new Map<string, string>()
+type TOtpRefContext = { ref: string }
+export const otpRefStorage = new AsyncLocalStorage<TOtpRefContext>()
 
 export const auth = betterAuth({
 	database: pool,
@@ -22,8 +24,8 @@ export const auth = betterAuth({
 				// DEV STUB: no SMS provider wired up yet — log the code
 				// instead of sending a real text. Swap this for a real
 				// provider (Twilio, etc.) before going to production.
-				const otpRef = generateOTPRef()
-				otpRefStore.set(phoneNumber, otpRef)
+				const store = otpRefStorage.getStore()
+				const otpRef = store ? store.ref : generateOTPRef()
 				console.log(`[dev] OTP for ${phoneNumber}: ${code} (OTP Reference is ${otpRef})`)
 			},
 			signUpOnVerification: {
@@ -32,34 +34,10 @@ export const auth = betterAuth({
 			},
 		}),
 	],
-	databaseHooks: {
-		user: {
-			create: {
-				after: async (user) => {
-					const signupType = !!user.phoneNumber ? "phone" : "email"
-					if (signupType === "email") {
-						let firstname, middlename, lastname
-						const nameSplited = user.name.split(" ")
-						if (nameSplited.length > 0) {
-							const hasMid = nameSplited.length > 2
-							firstname = nameSplited[0]
-							middlename = hasMid ? nameSplited[1] || null : null
-							lastname = hasMid ? nameSplited[2] || null : nameSplited[1]
-
-							await pool.query(
-								`insert into user_info (user_id, firstname, middlename, lastname) values ($1, $2, $3, $4)`,
-								[user.id, firstname, middlename, lastname],
-							)
-						}
-					}
-				},
-			},
-		},
-	},
 })
 
 type TGenerateOTPRef = (length?: number) => string
-const generateOTPRef: TGenerateOTPRef = (length = 6) => {
+export const generateOTPRef: TGenerateOTPRef = (length = 6) => {
 	const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ023456789"
 	const bytes = crypto.randomBytes(length)
 	let result = ""

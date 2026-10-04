@@ -1,12 +1,14 @@
 "use client"
 
 import { Languages } from "lucide-react";
+import { LANG_CHANGE_EVENT } from "@/app/i18n/useLanguage";
 
 export const LanguageToggle = () => {
 	const toggle = () => {
 		const next = document.documentElement.lang === "th" ? "en" : "th"
 		document.documentElement.lang = next
 		localStorage.setItem("lang", next)
+		window.dispatchEvent(new CustomEvent(LANG_CHANGE_EVENT, { detail: next }))
 	}
 
 	return (
