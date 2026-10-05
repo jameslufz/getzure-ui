@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/app/components/Toaster";
 
 const notoSansThai = Noto_Sans_Thai({
 	variable: "--font-noto-sans-thai",
@@ -36,6 +37,7 @@ const RootLayout = ({ children }: LayoutProps<"/">) => {
 			<body className="min-h-full flex flex-col">
 				<script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 				{children}
+				<Toaster />
 			</body>
 		</html>
 	)

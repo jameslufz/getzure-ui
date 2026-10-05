@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react";
-import clsx from "clsx";
 import Link from "next/link";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { ArrowLeft, Check, Copy, CircleCheck } from "lucide-react";
 import { T } from "@/app/i18n/T";
 import { Select } from "@/app/components/Select";
+import { FormField } from "@/app/components/FormField";
+import { PageHeader } from "@/app/components/PageHeader";
 import { DatePicker } from "@/app/components/DatePicker";
 import { formatAmount } from "@/app/lib/format";
 import copy from "@/app/lib/copy";
@@ -28,19 +29,15 @@ type FormValues = {
 	customerEmail?: string
 }
 
-const generatePaymentLink = (title: string) => {
+type TGeneratePaymentLink = (title: string) => string
+
+const generatePaymentLink: TGeneratePaymentLink = (title) => {
 	const slug = title
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, "-")
 		.replace(/(^-|-$)/g, "")
 	const id = Math.random().toString(36).slice(2, 8)
 	return `https://pay.getzure.com/${slug || "link"}-${id}`
-}
-
-const fieldErrorClass = (hasError: boolean) => {
-	return hasError
-		? "border-rose-400 focus:border-rose-500 focus:ring-rose-500/20"
-		: "border-zinc-200 focus:border-teal-500 focus:ring-teal-500/20 dark:border-zinc-700"
 }
 
 const CreatePaymentLinkPage = () => {
@@ -61,7 +58,8 @@ const CreatePaymentLinkPage = () => {
 
 	const values = useWatch({ control })
 
-	const onSubmit = (data: FormValues) => setCreatedLink(generatePaymentLink(data.title))
+	const onSubmit: SubmitHandler<FormValues> = (data) =>
+		setCreatedLink(generatePaymentLink(data.title))
 
 	const handleCopy = () => {
 		if (!createdLink) return
@@ -88,17 +86,15 @@ const CreatePaymentLinkPage = () => {
 				<T k="paymentLink.back">กลับไปที่การชำระเงิน</T>
 			</Link>
 
-			<div>
-				<h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-					<T k="paymentLink.title">สร้างลิงก์ชำระเงิน</T>
-				</h1>
-				<p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+			<PageHeader
+				title={<T k="paymentLink.title">สร้างลิงก์ชำระเงิน</T>}
+				subtitle={
 					<T k="paymentLink.subtitle">สร้างลิงก์เพื่อส่งให้ลูกค้าใช้ชำระเงินให้คุณ</T>
-				</p>
-			</div>
+				}
+			/>
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-				<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900 lg:col-span-3">
+				<div className="card lg:col-span-3">
 					{createdLink ? (
 						<div className="flex flex-col items-center py-6 text-center">
 							<CircleCheck className="h-10 w-10 text-emerald-500" />
@@ -130,75 +126,67 @@ const CreatePaymentLinkPage = () => {
 							<button
 								type="button"
 								onClick={handleReset}
-								className="mt-6 text-sm font-medium text-teal-600 dark:text-teal-400"
+								className="link mt-6 text-sm"
 							>
 								<T k="paymentLink.form.reset">สร้างลิงก์อีกครั้ง</T>
 							</button>
 						</div>
 					) : (
 						<form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-							<div>
-								<label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-									<T k="paymentLink.form.title">ชื่อรายการชำระเงิน</T>
-								</label>
-								<input
-									{...register("title", { required: true })}
-									className={clsx(
-										"w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-900 outline-hidden focus:ring-2 dark:bg-zinc-900 dark:text-zinc-50",
-										fieldErrorClass(!!errors.title),
-									)}
-								/>
-								{errors.title && (
-									<p className="mt-1 text-xs text-rose-500">
+							<FormField
+								label={<T k="paymentLink.form.title">ชื่อรายการชำระเงิน</T>}
+								error={
+									errors.title && (
 										<T k="paymentLink.form.error.required">
 											กรุณากรอกข้อมูลนี้
 										</T>
-									</p>
-								)}
-							</div>
+									)
+								}
+							>
+								<input
+									{...register("title", { required: true })}
+									aria-invalid={!!errors.title}
+									className="input"
+								/>
+							</FormField>
 
 							<div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_auto]">
-								<div>
-									<label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-										<T k="paymentLink.form.amount">จำนวนเงิน</T>
-									</label>
-                                    <Controller
-                                        name="amount"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <NumericFormat
-                                                thousandSeparator=","
-                                                decimalScale={0}
-                                                allowNegative={false}
-                                                allowLeadingZeros={false}
-                                                value={field.value}
-                                                onValueChange={(values) => field.onChange(values.value)}
-                                                onBlur={field.onBlur}
-                                                className={clsx(
-                                                    "w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-900 outline-hidden focus:ring-2 dark:bg-zinc-900 dark:text-zinc-50",
-                                                    fieldErrorClass(!!errors.amount),
-                                                )}
-                                            />
-                                        )}
-                                    />
-									{errors.amount && (
-										<p className="mt-1 text-xs text-rose-500">
-											{errors.amount.type === "min" ? (
-												<T k="paymentLink.form.error.minAmount">
-													จำนวนเงินต้องมากกว่า 0
-												</T>
-											) : (
-												<T k="paymentLink.form.error.required">
-													กรุณากรอกข้อมูลนี้
-												</T>
-											)}
-										</p>
-									)}
-								</div>
-								<div>
-									<label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-										<T k="paymentLink.form.currency">สกุลเงิน</T>
-									</label>
+								<FormField
+									label={<T k="paymentLink.form.amount">จำนวนเงิน</T>}
+									error={
+										errors.amount &&
+										(errors.amount.type === "min" ? (
+											<T k="paymentLink.form.error.minAmount">
+												จำนวนเงินต้องมากกว่า 0
+											</T>
+										) : (
+											<T k="paymentLink.form.error.required">
+												กรุณากรอกข้อมูลนี้
+											</T>
+										))
+									}
+								>
+									<Controller
+										name="amount"
+										control={control}
+										render={({ field }) => (
+											<NumericFormat
+												thousandSeparator=","
+												decimalScale={0}
+												allowNegative={false}
+												allowLeadingZeros={false}
+												value={field.value}
+												onValueChange={(values) =>
+													field.onChange(values.value)
+												}
+												onBlur={field.onBlur}
+												aria-invalid={!!errors.amount}
+												className="input"
+											/>
+										)}
+									/>
+								</FormField>
+								<FormField label={<T k="paymentLink.form.currency">สกุลเงิน</T>}>
 									<Controller
 										name="currency"
 										control={control}
@@ -211,27 +199,29 @@ const CreatePaymentLinkPage = () => {
 											/>
 										)}
 									/>
-								</div>
+								</FormField>
 							</div>
 
-							<div>
-								<label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+							<FormField
+								label={
 									<T k="paymentLink.form.descriptionOptional">
 										รายละเอียด (ไม่บังคับ)
 									</T>
-								</label>
+								}
+							>
 								<textarea
 									rows={3}
 									{...register("description")}
-									className="w-full resize-none rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+									className="input resize-none"
 								/>
-							</div>
+							</FormField>
 
 							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-								<div>
-									<label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+								<FormField
+									label={
 										<T k="paymentLink.form.expiresAt">วันหมดอายุ (ไม่บังคับ)</T>
-									</label>
+									}
+								>
 									<Controller
 										name="expiresAt"
 										control={control}
@@ -242,44 +232,39 @@ const CreatePaymentLinkPage = () => {
 											/>
 										)}
 									/>
-								</div>
-								<div>
-									<label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+								</FormField>
+								<FormField
+									label={
 										<T k="paymentLink.form.customerEmail">
 											อีเมลลูกค้า (ไม่บังคับ)
 										</T>
-									</label>
+									}
+									error={
+										errors.customerEmail && (
+											<T k="paymentLink.form.error.invalidEmail">
+												กรุณากรอกอีเมลที่ถูกต้อง
+											</T>
+										)
+									}
+									hint={
+										<T k="paymentLink.form.customerEmailHint">
+											เราจะส่งลิงก์ไปยังอีเมลนี้
+										</T>
+									}
+								>
 									<input
 										type="email"
 										{...register("customerEmail", {
 											pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
 										})}
-										className={clsx(
-											"w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-900 outline-hidden focus:ring-2 dark:bg-zinc-900 dark:text-zinc-50",
-											fieldErrorClass(!!errors.customerEmail),
-										)}
+										aria-invalid={!!errors.customerEmail}
+										className="input"
 									/>
-									{errors.customerEmail ? (
-										<p className="mt-1 text-xs text-rose-500">
-											<T k="paymentLink.form.error.invalidEmail">
-												กรุณากรอกอีเมลที่ถูกต้อง
-											</T>
-										</p>
-									) : (
-										<p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-											<T k="paymentLink.form.customerEmailHint">
-												เราจะส่งลิงก์ไปยังอีเมลนี้
-											</T>
-										</p>
-									)}
-								</div>
+								</FormField>
 							</div>
 
 							<div className="flex justify-end pt-2">
-								<button
-									type="submit"
-									className="rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
-								>
+								<button type="submit" className="btn-primary">
 									<T k="paymentLink.form.submit">สร้างลิงก์ชำระเงิน</T>
 								</button>
 							</div>
@@ -291,11 +276,9 @@ const CreatePaymentLinkPage = () => {
 					<p className="mb-2 text-xs font-semibold tracking-wide text-zinc-400 uppercase dark:text-zinc-500">
 						<T k="paymentLink.preview.label">ตัวอย่าง</T>
 					</p>
-					<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+					<div className="card">
 						<div className="flex items-center gap-2">
-							<div className="flex h-7 w-7 items-center justify-center rounded-md bg-teal-600 text-xs font-bold text-white">
-								G
-							</div>
+							<div className="logo-mark h-7 w-7 text-xs">G</div>
 							<span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
 								Getzure
 							</span>
@@ -318,7 +301,7 @@ const CreatePaymentLinkPage = () => {
 						<button
 							type="button"
 							disabled
-							className="mt-6 w-full cursor-default rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white opacity-90"
+							className="btn-primary mt-6 w-full cursor-default opacity-90"
 						>
 							<T k="paymentLink.preview.payButton">ชำระเงินตอนนี้</T>
 						</button>

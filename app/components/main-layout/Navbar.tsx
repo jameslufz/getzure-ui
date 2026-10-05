@@ -3,7 +3,7 @@
 import Link from "next/link";
 import clsx from "clsx";
 import { usePathname } from "next/navigation";
-import { Link2, LayoutDashboard, KeyRound, ShieldCheck } from "lucide-react";
+import { Link2, LayoutDashboard, KeyRound, ShieldCheck, IdCard } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { T } from "@/app/i18n/T";
 import type { TranslationKey } from "@/app/i18n/translations";
@@ -35,16 +35,28 @@ const navGroups: NavGroup[] = [
 				href: "/dashboard",
 			},
 			{
-				key: "nav.personal.changePassword",
-				th: "เปลี่ยนรหัสผ่าน",
-				icon: KeyRound,
-				href: "#",
-			},
-			{
 				key: "nav.personal.verification",
 				th: "การยืนยันตัวตน",
+				icon: IdCard,
+				href: "/dashboard/verification",
+			},
+		],
+	},
+	{
+		topic: "nav.group.security",
+		topicTh: "ความปลอดภัย",
+		items: [
+			{
+				key: "nav.security.changePassword",
+				th: "เปลี่ยนรหัสผ่าน",
+				icon: KeyRound,
+				href: "/dashboard/security/change-password",
+			},
+			{
+				key: "nav.security.twoFactor",
+				th: "ความปลอดภัยสองชั้น",
 				icon: ShieldCheck,
-				href: "#",
+				href: "/dashboard/security/two-factor",
 			},
 		],
 	},
@@ -66,7 +78,7 @@ const Navbar = () => {
 	const pathname = usePathname()
 
 	return (
-		<nav className="flex-1 space-y-6 px-3 py-4">
+		<nav className="min-h-0 flex-1 space-y-6 overflow-y-auto px-3 py-4">
 			{navGroups.map((group, index) => (
 				<div key={group.topic ?? index}>
 					{group.topic && (

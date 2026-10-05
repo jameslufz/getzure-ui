@@ -1,16 +1,19 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/app/components/ThemeToggle";
 import { LanguageToggle } from "@/app/components/LanguageToggle";
 import { T } from "@/app/i18n/T";
 import { authClient } from "@/app/lib/auth-client";
+import { clearClientSession, handleSessionExpired } from "@/app/lib/session";
 import { Search, Bell, Menu, X, LogOut } from "lucide-react";
 import clsx from "clsx";
 import Navbar from "../components/main-layout/Navbar";
 
-const getInitials = (name?: string | null) => {
+type TGetInitials = (name?: string | null) => string
+
+const getInitials: TGetInitials = (name) => {
 	if (!name) return "?"
 	const words = name.split(" ").filter(Boolean)
 	if (words.length > 1) {
@@ -23,16 +26,28 @@ const getInitials = (name?: string | null) => {
 	return name.slice(0, 2).toUpperCase()
 }
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+type TDashboardLayoutProps = { children: React.ReactNode }
+type TDashboardLayout = (props: TDashboardLayoutProps) => React.ReactNode
+
+const DashboardLayout: TDashboardLayout = ({ children }) => {
 	const router = useRouter()
 	const [mobileNavOpen, setMobileNavOpen] = useState(false)
-	const { data: session } = authClient.useSession()
+	const { data: session, isPending, error } = authClient.useSession()
 	const user = session && session.user
+
+	// "No session and no error" is the server saying the session is gone (an error is just a
+	// failed request). It also fires when the tab regains focus, because useSession refetches.
+	useEffect(() => {
+		if (!isPending && !error && !session) handleSessionExpired()
+	}, [isPending, error, session])
 
 	const handleSignOut = () => {
 		authClient.signOut({
 			fetchOptions: {
-				onSuccess: () => router.push("/sign-in"),
+				onSuccess: () => {
+					clearClientSession()
+					router.push("/sign-in")
+				},
 			},
 		})
 	}
@@ -49,11 +64,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
 			<aside
 				className={clsx(
-					`fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-zinc-200 bg-white transition-transform dark:border-zinc-800 dark:bg-zinc-900 md:static md:translate-x-0`,
+					`fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-zinc-200 bg-white transition-transform dark:border-zinc-800 dark:bg-zinc-900 md:sticky md:top-0 md:h-dvh md:shrink-0 md:translate-x-0`,
 					mobileNavOpen ? "translate-x-0" : "-translate-x-full",
 				)}
 			>
-				<div className="flex h-16 items-center justify-between gap-2 border-b border-zinc-200 px-5 dark:border-zinc-800">
+				<div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-zinc-200 px-5 dark:border-zinc-800">
 					<div className="flex items-center gap-2">
 						<div className="flex h-8 w-8 items-center justify-center rounded-md bg-teal-600 text-sm font-bold text-white">
 							G
@@ -73,7 +88,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
 				<Navbar />
 
-				<div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+				<div className="shrink-0 border-t border-zinc-200 p-4 dark:border-zinc-800">
 					<div className="flex items-center gap-3 rounded-md p-2">
 						<div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-200 text-sm font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
 							{getInitials(user && user.name)}

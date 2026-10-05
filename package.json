@@ -10,6 +10,7 @@
 		"format": "prettier --write . && node scripts/fix-import-semicolons.mjs"
 	},
 	"dependencies": {
+		"@better-auth/passkey": "^1.7.6",
 		"@hookform/resolvers": "^5.9.1",
 		"better-auth": "^1.7.6",
 		"clsx": "^2.1.1",
@@ -20,6 +21,7 @@
 		"react-dom": "19.2.8",
 		"react-hook-form": "^7.89.0",
 		"react-number-format": "^5.4.5",
+		"react-qr-code": "^2.2.0",
 		"zod": "^4.6.5"
 	},
 	"devDependencies": {

@@ -1,4 +1,6 @@
-const copy = (text: string) => {
+type TCopy = (text: string) => void
+
+const copy: TCopy = (text) => {
 	navigator.clipboard.writeText(text)
 }
 

@@ -1,6 +1,8 @@
 "use client"
 
+import { ReactNode } from "react";
 import { authClient } from "@/app/lib/auth-client";
+import { appendRedirect } from "@/app/lib/session";
 import { T } from "@/app/i18n/T";
 
 const GoogleIcon = () => (
@@ -24,20 +26,19 @@ const GoogleIcon = () => (
 	</svg>
 )
 
-export const GoogleSignInButton = ({ callbackURL = "/dashboard" }: { callbackURL?: string }) => {
+type TGoogleSignInButtonProps = { callbackURL?: string }
+type TGoogleSignInButton = (props: TGoogleSignInButtonProps) => ReactNode
+
+export const GoogleSignInButton: TGoogleSignInButton = ({ callbackURL = "/dashboard" }) => {
 	const handleClick = () => {
 		authClient.signIn.social({
 			provider: "google",
-			callbackURL,
+			callbackURL: appendRedirect(callbackURL),
 		})
 	}
 
 	return (
-		<button
-			type="button"
-			onClick={handleClick}
-			className="flex w-full items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-		>
+		<button type="button" onClick={handleClick} className="btn-outline w-full">
 			<GoogleIcon />
 			<T k="auth.google">ดำเนินการต่อด้วย Google</T>
 		</button>

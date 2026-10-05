@@ -1,34 +1,35 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { Check, ChevronDown } from "lucide-react";
 
 type Option = { value: string; label: string }
 
-export const Select = ({
-	value,
-	onChange,
-	options,
-	className,
-}: {
+type TSelectProps = {
 	value: string
 	onChange: (value: string) => void
 	options: Option[]
 	className?: string
-}) => {
+}
+
+type TSelect = (props: TSelectProps) => ReactNode
+type THandleClickOutside = (event: MouseEvent) => void
+type THandleKeyDown = (event: KeyboardEvent) => void
+
+export const Select: TSelect = ({ value, onChange, options, className }) => {
 	const [open, setOpen] = useState(false)
 	const ref = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		if (!open) return
 
-		const handleClickOutside = (event: MouseEvent) => {
+		const handleClickOutside: THandleClickOutside = (event) => {
 			if (ref.current && !ref.current.contains(event.target as Node)) {
 				setOpen(false)
 			}
 		}
-		const handleKeyDown = (event: KeyboardEvent) => {
+		const handleKeyDown: THandleKeyDown = (event) => {
 			if (event.key === "Escape") setOpen(false)
 		}
 
@@ -49,7 +50,7 @@ export const Select = ({
 				onClick={() => setOpen((prev) => !prev)}
 				aria-haspopup="listbox"
 				aria-expanded={open}
-				className="flex w-full items-center justify-between gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+				className="input flex items-center justify-between gap-2"
 			>
 				{selected && selected.label}
 				<ChevronDown
@@ -63,7 +64,7 @@ export const Select = ({
 			{open && (
 				<ul
 					role="listbox"
-					className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
+					className="popover absolute z-10 mt-1 w-full overflow-hidden py-1"
 				>
 					{options.map((option) => {
 						const isSelected = option.value === value

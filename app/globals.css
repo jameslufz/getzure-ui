@@ -27,5 +27,147 @@ body {
 }
 
 button {
-    @apply hover:cursor-pointer hover:brightness-110 disabled:cursor-not-allowed;
+	@apply hover:cursor-pointer hover:brightness-110 disabled:cursor-not-allowed;
+}
+
+/* The brightness above turns this button's pale border white on hover, so the border vanished. */
+.btn-outline:hover {
+	@apply border-zinc-300 brightness-100 dark:border-zinc-600;
+}
+
+@layer components {
+	.card {
+		@apply rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900;
+	}
+
+	.popover {
+		@apply rounded-md border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900;
+	}
+
+	.input {
+		@apply w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-hidden focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50;
+	}
+
+	.input[aria-invalid="true"],
+	.input[data-invalid="true"] {
+		@apply border-rose-400 focus:border-rose-500 focus:ring-rose-500/20;
+	}
+
+	.input[readonly] {
+		@apply cursor-not-allowed border-dashed bg-zinc-50 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400;
+	}
+
+	.input[type="file"] {
+		@apply p-1.5 file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-zinc-700 dark:file:bg-zinc-800 dark:file:text-zinc-200;
+	}
+
+	.label {
+		@apply mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300;
+	}
+
+	.field-error {
+		@apply mt-1 text-xs text-rose-500;
+	}
+
+	.field-hint {
+		@apply mt-1 text-xs text-zinc-500 dark:text-zinc-400;
+	}
+
+	.alert-error {
+		@apply rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-400;
+	}
+
+	.btn-primary {
+		@apply rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-60;
+	}
+
+	.btn-outline {
+		@apply flex items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800;
+	}
+
+	.link {
+		@apply font-medium text-teal-600 dark:text-teal-400;
+	}
+
+	.logo-mark {
+		@apply flex items-center justify-center rounded-md bg-teal-600 font-bold text-white;
+	}
+}
+
+@layer components {
+	.alert-success {
+		@apply rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400;
+	}
+}
+
+@layer components {
+	.option {
+		@apply flex w-full items-center gap-3 rounded-md border border-zinc-200 p-3 text-left text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800;
+	}
+
+	.option[aria-checked="true"] {
+		@apply border-teal-500 ring-2 ring-teal-500/20;
+	}
+}
+
+@layer components {
+	.badge-success {
+		@apply shrink-0 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400;
+	}
+}
+
+@layer components {
+	.badge-accent {
+		@apply shrink-0 rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-teal-700 dark:bg-teal-500/10 dark:text-teal-400;
+	}
+}
+
+/*
+ * Toasts: each one slides and fades in, then slides out while its row collapses, so the toasts
+ * under it glide into place instead of jumping. The wrapper animates its height through a
+ * grid row going from 1fr to 0fr.
+ */
+@keyframes toast-in {
+	from {
+		opacity: 0;
+		transform: translateY(1rem) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@layer components {
+	.toast-wrap {
+		@apply grid w-full grid-rows-[1fr] pt-3 transition-[grid-template-rows,opacity,padding] duration-[350ms] ease-out;
+	}
+
+	.toast-wrap[data-leaving="true"] {
+		@apply grid-rows-[0fr] pt-0 opacity-0;
+	}
+
+	.toast-clip {
+		@apply min-h-0 overflow-hidden;
+	}
+
+	.toast {
+		@apply pointer-events-auto flex min-w-72 items-center gap-3 rounded-xl bg-zinc-900 px-5 py-4 text-base font-medium text-white shadow-xl ring-1 ring-black/5 dark:bg-zinc-100 dark:text-zinc-900;
+		animation: toast-in 350ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.toast-wrap[data-leaving="true"] .toast {
+		@apply translate-x-6 transition-transform duration-[350ms] ease-in;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.toast {
+			animation: none;
+		}
+
+		.toast-wrap,
+		.toast-wrap[data-leaving="true"] .toast {
+			transition-duration: 1ms;
+		}
+	}
 }
