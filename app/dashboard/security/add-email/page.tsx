@@ -1,12 +1,11 @@
 "use client"
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { T } from "@/app/i18n/T";
 import { FormField } from "@/app/components/FormField";
+import { Breadcrumb, PERSONAL_CRUMB } from "@/app/components/Breadcrumb";
 import { PageHeader } from "@/app/components/PageHeader";
 import { authClient } from "@/app/lib/auth-client";
 import { useSecurityStatus } from "@/app/hooks/useSecurityStatus";
@@ -28,7 +27,7 @@ const TWO_FACTOR_PATH = "/dashboard/security/two-factor"
 // second step, and it becomes the address used to sign in with a password.
 const AddEmailPage: TAddEmailPage = () => {
 	const router = useRouter()
-	const { status } = useSecurityStatus()
+	const { status, refresh } = useSecurityStatus()
 	const [step, setStep] = useState<TEmailStep>("email")
 	const [pendingEmail, setPendingEmail] = useState("")
 	const [serverError, setServerError] = useState<TServerErrorKind | null>(null)
@@ -52,6 +51,7 @@ const AddEmailPage: TAddEmailPage = () => {
 		})
 		if (error) return setServerError(kindFromAuthClientError(error))
 		showToast(<T k="security.addEmail.done">เพิ่มอีเมลแล้ว</T>)
+		refresh()
 		router.push(TWO_FACTOR_PATH)
 	}
 
@@ -62,13 +62,16 @@ const AddEmailPage: TAddEmailPage = () => {
 
 	return (
 		<div className="mx-auto max-w-xl space-y-6">
-			<Link
-				href={TWO_FACTOR_PATH}
-				className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-			>
-				<ArrowLeft className="h-4 w-4" />
-				<T k="security.back">กลับไปที่ความปลอดภัยสองชั้น</T>
-			</Link>
+			<Breadcrumb
+				items={[
+					PERSONAL_CRUMB,
+					{
+						label: <T k="security.twoFactor.title">ความปลอดภัยสองชั้น</T>,
+						href: TWO_FACTOR_PATH,
+					},
+					{ label: <T k="security.addEmail.title">เพิ่มอีเมลของคุณ</T> },
+				]}
+			/>
 
 			<PageHeader
 				title={<T k="security.addEmail.title">เพิ่มอีเมลของคุณ</T>}

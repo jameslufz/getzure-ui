@@ -6,7 +6,9 @@ import { Mail, Smartphone } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { T } from "@/app/i18n/T";
 import { FormField } from "@/app/components/FormField";
+import { Breadcrumb, PERSONAL_CRUMB } from "@/app/components/Breadcrumb";
 import { PageHeader } from "@/app/components/PageHeader";
+import { QueryNotice } from "@/app/components/QueryNotice";
 import { useSecurityStatus } from "@/app/hooks/useSecurityStatus";
 import {
 	parseApiErrorKind,
@@ -31,7 +33,7 @@ type TPasswordForm = {
 type TChangePasswordPage = () => React.ReactNode
 
 const ChangePasswordPage: TChangePasswordPage = () => {
-	const { status, refresh } = useSecurityStatus()
+	const { status, view, retry, refresh } = useSecurityStatus()
 	const [method, setMethod] = useState<TPasswordVerifyMethod | null>(null)
 	const [codeSent, setCodeSent] = useState(false)
 	const [sending, setSending] = useState(false)
@@ -103,6 +105,13 @@ const ChangePasswordPage: TChangePasswordPage = () => {
 
 	return (
 		<div className="mx-auto max-w-xl space-y-6">
+			<Breadcrumb
+				items={[
+					PERSONAL_CRUMB,
+					{ label: <T k="security.password.title">เปลี่ยนรหัสผ่าน</T> },
+				]}
+			/>
+
 			<PageHeader
 				title={<T k="security.password.title">เปลี่ยนรหัสผ่าน</T>}
 				subtitle={
@@ -134,8 +143,13 @@ const ChangePasswordPage: TChangePasswordPage = () => {
 					</p>
 				)}
 
-				{!status ? (
+				{status === undefined || view === "loading" ? (
 					<div className="h-24 animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800" />
+				) : status === null || view === "failed" ? (
+					<QueryNotice
+						kind={view === "failed" ? "failed" : "unavailable"}
+						onRetry={retry}
+					/>
 				) : availableMethods.length === 0 ? (
 					<p className="alert-error">
 						<T k="security.password.noMethod">

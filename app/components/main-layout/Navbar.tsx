@@ -3,10 +3,19 @@
 import Link from "next/link";
 import clsx from "clsx";
 import { usePathname } from "next/navigation";
-import { Link2, LayoutDashboard, KeyRound, ShieldCheck, IdCard } from "lucide-react";
+import {
+	ShoppingCart,
+	LayoutDashboard,
+	KeyRound,
+	ShieldCheck,
+	UserRound,
+	Package,
+	PackagePlus,
+	ReceiptText,
+} from "lucide-react"
 import type { LucideIcon } from "lucide-react";
 import { T } from "@/app/i18n/T";
-import type { TranslationKey } from "@/app/i18n/translations";
+import { translations, type TranslationKey } from "@/app/i18n/translations";
 
 type NavItem = {
 	key: TranslationKey
@@ -35,17 +44,11 @@ const navGroups: NavGroup[] = [
 				href: "/dashboard",
 			},
 			{
-				key: "nav.personal.verification",
-				th: "การยืนยันตัวตน",
-				icon: IdCard,
-				href: "/dashboard/verification",
+				key: "nav.personal.profile",
+				th: "โปรไฟล์",
+				icon: UserRound,
+				href: "/dashboard/profile",
 			},
-		],
-	},
-	{
-		topic: "nav.group.security",
-		topicTh: "ความปลอดภัย",
-		items: [
 			{
 				key: "nav.security.changePassword",
 				th: "เปลี่ยนรหัสผ่าน",
@@ -61,14 +64,38 @@ const navGroups: NavGroup[] = [
 		],
 	},
 	{
+		topic: "nav.group.products",
+		topicTh: "สินค้า",
+		items: [
+			{
+				key: "nav.products.list",
+				th: "คลังสินค้า",
+				icon: Package,
+				href: "/dashboard/products",
+			},
+			{
+				key: "nav.products.create",
+				th: "เพิ่มสินค้า",
+				icon: PackagePlus,
+				href: "/dashboard/products/create",
+			},
+		],
+	},
+	{
 		topic: "nav.group.payment",
 		topicTh: "การชำระเงิน",
 		items: [
 			{
-				key: "nav.createPaymentLink",
-				th: "สร้างลิงก์ชำระเงิน",
-				icon: Link2,
-				href: "/dashboard/payment/create-link",
+				key: "nav.createOrder",
+				th: "สร้างออเดอร์",
+				icon: ShoppingCart,
+				href: "/dashboard/orders/create",
+			},
+			{
+				key: "nav.orders.list",
+				th: "รายการออเดอร์",
+				icon: ReceiptText,
+				href: "/dashboard/orders",
 			},
 		],
 	},
@@ -82,9 +109,11 @@ const Navbar = () => {
 			{navGroups.map((group, index) => (
 				<div key={group.topic ?? index}>
 					{group.topic && (
-						<p className="px-3 text-xs font-semibold tracking-wide text-zinc-400 uppercase dark:text-zinc-500">
-							<T k={group.topic}>{group.topicTh ?? ""}</T>
-						</p>
+						<p
+							data-en={translations[group.topic]}
+							data-th={group.topicTh}
+							className="px-3 text-xs font-semibold tracking-wide text-zinc-400 uppercase before:content-[attr(data-en)] th:before:content-[attr(data-th)] dark:text-zinc-500"
+						/>
 					)}
 					<div className="mt-2 space-y-1">
 						{group.items.map(({ key, th, icon: Icon, href }) => {

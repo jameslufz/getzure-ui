@@ -117,6 +117,16 @@ button {
 }
 
 @layer components {
+	.badge-warning {
+		@apply shrink-0 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-amber-700 dark:bg-amber-500/10 dark:text-amber-400;
+	}
+
+	.badge-danger {
+		@apply shrink-0 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-rose-700 dark:bg-rose-500/10 dark:text-rose-400;
+	}
+}
+
+@layer components {
 	.badge-accent {
 		@apply shrink-0 rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-teal-700 dark:bg-teal-500/10 dark:text-teal-400;
 	}

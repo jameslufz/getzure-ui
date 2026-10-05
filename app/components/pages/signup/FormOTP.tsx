@@ -1,4 +1,5 @@
 import { T } from "@/app/i18n/T";
+import { getQueryClient } from "@/app/lib/query-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -75,6 +76,8 @@ const FormOTP: TFormOTP = ({
 						router.push(appendRedirect("/sign-in/two-factor"))
 						return
 					}
+
+					getQueryClient().clear()
 
 					onSetStep("info")
 				},

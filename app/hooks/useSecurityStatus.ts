@@ -1,8 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react";
-import { serviceFetch } from "@/app/lib/session";
+import { useQuery } from "@tanstack/react-query";
+import { fetchServiceJson, getQueryView, TQueryView } from "@/app/lib/query-fetch";
+import { queryKeys } from "@/app/lib/query-keys";
 import { TSecurityLevel } from "@/app/lib/security-level";
+import { useInvalidate } from "@/app/hooks/useInvalidate";
 
 export type TSecurityStatus = {
 	hasPassword: boolean
@@ -17,24 +19,25 @@ export type TSecurityStatus = {
 	level: TSecurityLevel
 }
 
-type TUseSecurityStatus = () => { status: TSecurityStatus | null; refresh: () => void }
+type TUseSecurityStatus = () => {
+	status: TSecurityStatus | null | undefined
+	view: TQueryView
+	retry: () => void
+	refresh: () => void
+}
 
-// Loads the security status from the Go service and reloads it whenever `refresh` is called (after an action changes the account).
+// The security status from the Go service; `refresh` makes it out of date after an action changes the account.
 export const useSecurityStatus: TUseSecurityStatus = () => {
-	const [status, setStatus] = useState<TSecurityStatus | null>(null)
-	const [version, setVersion] = useState(0)
+	const { afterSecurityChange } = useInvalidate()
+	const query = useQuery({
+		queryKey: queryKeys.security,
+		queryFn: ({ signal }) => fetchServiceJson<TSecurityStatus>("/security", signal),
+	})
 
-	useEffect(() => {
-		const loadStatus = async () => {
-			try {
-				const res = await serviceFetch("/security")
-				if (res.ok) setStatus(await res.json())
-			} catch {}
-		}
-		loadStatus()
-	}, [version])
-
-	const refresh = () => setVersion((current) => current + 1)
-
-	return { status, refresh }
+	return {
+		status: query.data,
+		view: getQueryView(query),
+		retry: () => query.refetch(),
+		refresh: () => afterSecurityChange(),
+	}
 }

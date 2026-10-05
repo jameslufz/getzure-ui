@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AuthShell } from "@/app/components/AuthShell";
-import { getRedirectFromLocation, serviceFetch } from "@/app/lib/session";
+import { getQueryClient } from "@/app/lib/query-client";
+import { fetchServiceJson } from "@/app/lib/query-fetch";
+import { queryKeys } from "@/app/lib/query-keys";
+import { getRedirectFromLocation } from "@/app/lib/session";
 import { T } from "@/app/i18n/T";
 import FormInfo from "../components/pages/signup/FormInfo";
 import FormPhone from "../components/pages/signup/FormPhone";
@@ -64,8 +67,13 @@ const SignUpPage = () => {
 
 		const checkSession = async () => {
 			try {
-				const res = await serviceFetch("/info")
-				const data: TInfoCheckResponse = await res.json()
+				// Where the sign-up stands is flow state, so it is asked again every time.
+				const data = await getQueryClient().fetchQuery({
+					queryKey: queryKeys.signupInfo,
+					queryFn: ({ signal }) => fetchServiceJson<TInfoCheckResponse>("/info", signal),
+					staleTime: 0,
+				})
+				if (!data) return
 				if (data.infoComplete) {
 					router.push(getRedirectFromLocation() ?? "/dashboard")
 					return

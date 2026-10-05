@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 type TFormFieldProps = {
-	label: ReactNode
+	label?: ReactNode
 	required?: boolean
 	error?: ReactNode
 	hint?: ReactNode
@@ -13,10 +13,12 @@ type TFormField = (props: TFormFieldProps) => ReactNode
 export const FormField: TFormField = ({ label, required, error, hint, children }) => {
 	return (
 		<div>
-			<label className="label">
-				{label}
-				{required && <span className="text-red-500"> *</span>}
-			</label>
+			{label && (
+				<label className="label">
+					{label}
+					{required && <span className="text-red-500"> *</span>}
+				</label>
+			)}
 			{children}
 			{error ? (
 				<p className="field-error">{error}</p>

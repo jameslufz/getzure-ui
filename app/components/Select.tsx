@@ -11,13 +11,24 @@ type TSelectProps = {
 	onChange: (value: string) => void
 	options: Option[]
 	className?: string
+	placeholder?: ReactNode
+	invalid?: boolean
+	disabled?: boolean
 }
 
 type TSelect = (props: TSelectProps) => ReactNode
 type THandleClickOutside = (event: MouseEvent) => void
 type THandleKeyDown = (event: KeyboardEvent) => void
 
-export const Select: TSelect = ({ value, onChange, options, className }) => {
+export const Select: TSelect = ({
+	value,
+	onChange,
+	options,
+	className,
+	placeholder,
+	invalid,
+	disabled,
+}) => {
 	const [open, setOpen] = useState(false)
 	const ref = useRef<HTMLDivElement>(null)
 
@@ -50,9 +61,11 @@ export const Select: TSelect = ({ value, onChange, options, className }) => {
 				onClick={() => setOpen((prev) => !prev)}
 				aria-haspopup="listbox"
 				aria-expanded={open}
-				className="input flex items-center justify-between gap-2"
+				data-invalid={invalid}
+				disabled={disabled}
+				className="input flex items-center justify-between gap-2 disabled:cursor-not-allowed disabled:opacity-60"
 			>
-				{selected && selected.label}
+				{selected ? selected.label : <span className="text-zinc-400">{placeholder}</span>}
 				<ChevronDown
 					className={clsx(
 						"h-4 w-4 text-zinc-400 transition-transform",
@@ -64,7 +77,7 @@ export const Select: TSelect = ({ value, onChange, options, className }) => {
 			{open && (
 				<ul
 					role="listbox"
-					className="popover absolute z-10 mt-1 w-full overflow-hidden py-1"
+					className="popover absolute z-10 mt-1 max-h-64 w-full overflow-y-auto py-1"
 				>
 					{options.map((option) => {
 						const isSelected = option.value === value

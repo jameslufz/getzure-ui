@@ -1,10 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { T } from "@/app/i18n/T";
 import { FormField } from "@/app/components/FormField";
+import { Breadcrumb, PERSONAL_CRUMB, TCrumb } from "@/app/components/Breadcrumb";
 import { PageHeader } from "@/app/components/PageHeader";
+import { QueryNotice } from "@/app/components/QueryNotice";
+import { useInvalidate } from "@/app/hooks/useInvalidate";
 import { DatePicker } from "@/app/components/DatePicker";
 import {
 	parseApiErrorKind,
@@ -13,6 +17,8 @@ import {
 	TServerErrorKind,
 } from "@/app/lib/signup-errors"
 import { clientServiceUrl } from "@/app/lib/client-service";
+import { fetchServiceJson, getQueryView } from "@/app/lib/query-fetch";
+import { queryKeys } from "@/app/lib/query-keys";
 import { serviceFetch } from "@/app/lib/session";
 import {
 	ADDRESS_TEXT_PATTERN,
@@ -29,7 +35,7 @@ type TVerificationStatus = "none" | "pending" | "verified"
 
 type TVerificationInfo = {
 	status: TVerificationStatus
-	personalIdLast4?: string
+	personalIdMask?: string
 	personalIdExp?: string
 	hasImage?: boolean
 }
@@ -50,6 +56,19 @@ type TAddressFieldName = "houseNo" | "streetAddr" | "subdistrict" | "district" |
 type TAddressField = { name: TAddressFieldName; label: React.ReactNode; maxLength: number }
 
 type TVerificationPage = () => React.ReactNode
+type TSubmitVerification = (formData: FormData) => Promise<void>
+
+const submitVerification: TSubmitVerification = async (formData) => {
+	// No Content-Type header: the browser adds the multipart boundary itself.
+	const res = await serviceFetch("/verification", { method: "POST", body: formData })
+	if (!res.ok) throw new SignupApiError(await parseApiErrorKind(res))
+}
+
+const crumbs: TCrumb[] = [
+	PERSONAL_CRUMB,
+	{ label: <T k="nav.personal.profile">โปรไฟล์</T>, href: "/dashboard/profile" },
+	{ label: <T k="verification.title">การยืนยันตัวตน</T> },
+]
 
 // YYYY-MM-DD for the date input's `min`, so an already-expired card can't be picked.
 const today = () => new Date().toLocaleDateString("en-CA")
@@ -83,8 +102,17 @@ const ADDRESS_FIELDS: TAddressField[] = [
 ]
 
 const VerificationPage: TVerificationPage = () => {
-	const [info, setInfo] = useState<TVerificationInfo | null>(null)
-	const [version, setVersion] = useState(0)
+	const { afterVerificationSubmit } = useInvalidate()
+	const query = useQuery({
+		queryKey: queryKeys.verification,
+		queryFn: ({ signal }) => fetchServiceJson<TVerificationInfo>("/verification", signal),
+	})
+	const { data: info } = query
+	const queryView = getQueryView(query)
+	const submitMutation = useMutation({
+		mutationFn: submitVerification,
+		onSuccess: afterVerificationSubmit,
+	})
 	const [serverError, setServerError] = useState<TServerErrorKind | null>(null)
 	const [submitted, setSubmitted] = useState(false)
 	const {
@@ -94,16 +122,6 @@ const VerificationPage: TVerificationPage = () => {
 		reset,
 		formState: { errors, isSubmitting },
 	} = useForm<TVerificationForm>()
-
-	useEffect(() => {
-		const loadInfo = async () => {
-			try {
-				const res = await serviceFetch("/verification")
-				if (res.ok) setInfo(await res.json())
-			} catch {}
-		}
-		loadInfo()
-	}, [version])
 
 	const onSubmit: SubmitHandler<TVerificationForm> = async (data) => {
 		setServerError(null)
@@ -117,12 +135,9 @@ const VerificationPage: TVerificationPage = () => {
 		formData.append("idCardPhoto", data.idCardPhoto[0])
 
 		try {
-			// No Content-Type header: the browser adds the multipart boundary itself.
-			const res = await serviceFetch("/verification", { method: "POST", body: formData })
-			if (!res.ok) throw new SignupApiError(await parseApiErrorKind(res))
+			await submitMutation.mutateAsync(formData)
 			reset()
 			setSubmitted(true)
-			setVersion((current) => current + 1)
 		} catch (err) {
 			setServerError(err instanceof SignupApiError ? err.kind : "generic")
 		}
@@ -135,9 +150,26 @@ const VerificationPage: TVerificationPage = () => {
 		)
 	}
 
-	if (info?.status === "verified") {
+	if (info === undefined || info === null || queryView === "failed") {
 		return (
 			<div className="mx-auto max-w-xl space-y-6">
+				<Breadcrumb items={crumbs} />
+				{queryView === "loading" || info === undefined ? (
+					<div className="card h-64 animate-pulse" />
+				) : (
+					<QueryNotice
+						kind={queryView === "failed" ? "failed" : "unavailable"}
+						onRetry={() => query.refetch()}
+					/>
+				)}
+			</div>
+		)
+	}
+
+	if (info.status === "verified") {
+		return (
+			<div className="mx-auto max-w-xl space-y-6">
+				<Breadcrumb items={crumbs} />
 				<PageHeader
 					title={<T k="verification.title">การยืนยันตัวตน</T>}
 					subtitle={
@@ -155,6 +187,7 @@ const VerificationPage: TVerificationPage = () => {
 
 	return (
 		<div className="mx-auto max-w-xl space-y-6">
+			<Breadcrumb items={crumbs} />
 			<PageHeader
 				title={<T k="verification.title">การยืนยันตัวตน</T>}
 				subtitle={
@@ -164,7 +197,7 @@ const VerificationPage: TVerificationPage = () => {
 				}
 			/>
 
-			{info?.status === "pending" && (
+			{info.status === "pending" && (
 				<div className="card space-y-3">
 					<p className="alert-success">
 						<T k="verification.pending">
@@ -173,13 +206,13 @@ const VerificationPage: TVerificationPage = () => {
 						</T>
 					</p>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400">
-						<T k="verification.pending.idLast4">เลขบัตรประชาชนที่ส่ง</T>: •••••••••{" "}
-						{info.personalIdLast4}
+						<T k="verification.pending.idMask">เลขบัตรประชาชนที่ส่ง</T>:{" "}
+						{info.personalIdMask}
 					</p>
 					{info.hasImage && (
 						// eslint-disable-next-line @next/next/no-img-element
 						<img
-							src={`${clientServiceUrl("/verification/image")}?v=${version}`}
+							src={`${clientServiceUrl("/verification/image")}?v=${query.dataUpdatedAt}`}
 							alt=""
 							className="max-h-56 rounded-md border border-zinc-200 object-contain dark:border-zinc-700"
 						/>

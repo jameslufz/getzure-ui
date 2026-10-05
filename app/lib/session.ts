@@ -2,6 +2,7 @@
 // send the user to /sign-in with the page they were on so they land back there after logging in.
 import { clientServiceUrl } from "@/app/lib/client-service";
 import { clearReauth } from "@/app/lib/reauth";
+import { getQueryClient } from "@/app/lib/query-client";
 
 // Display preferences belong to the browser, not the session, so they survive a sign-out.
 const PRESERVED_STORAGE_KEYS = ["theme", "lang"]
@@ -47,6 +48,8 @@ export const clearClientSession: TClearClientSession = () => {
 		.forEach((key) => localStorage.removeItem(key))
 	sessionStorage.clear()
 	clearReauth()
+	// The next person to sign in on this tab must not see this user's cached data.
+	getQueryClient().clear()
 
 	// The session cookie is httpOnly and is cleared by the sign-out call; this covers the rest.
 	document.cookie.split(";").forEach((cookie) => {

@@ -10,6 +10,7 @@ import { AuthShell } from "@/app/components/AuthShell";
 import { FormField } from "@/app/components/FormField";
 import { OrDivider } from "@/app/components/OrDivider";
 import { T } from "@/app/i18n/T";
+import { getQueryClient } from "@/app/lib/query-client";
 import { GoogleSignInButton } from "@/app/components/GoogleSignInButton";
 
 type FormValues = {
@@ -33,12 +34,15 @@ const SignInPage = () => {
 		authClient.signIn.email(
 			{ email: data.email, password: data.password },
 			{
-				onSuccess: (ctx) =>
+				onSuccess: (ctx) => {
+					// A new sign-in starts with an empty cache, so nothing of a previous user shows.
+					getQueryClient().clear()
 					router.push(
 						ctx.data.twoFactorRedirect
 							? appendRedirect("/sign-in/two-factor")
 							: (getRedirectFromLocation() ?? "/dashboard"),
-					),
+					)
+				},
 				onError: () => {
 					setLoading(false)
 					setServerError(true)

@@ -7,12 +7,34 @@ export const BANK_ACCOUNT_NO_PATTERN = /^\d{10,12}$/u
 export const NATIONAL_ID_PATTERN = /^\d{13}$/u
 export const POSTCODE_PATTERN = /^\d{5}$/u
 export const ADDRESS_TEXT_PATTERN = /^[\p{L}\p{M}\p{N}\s./,()-]+$/u
+export const PRODUCT_TEXT_PATTERN = /^[^\p{C}]+$/u
+export const PHONE_NUMBER_PATTERN = /^(06|08|09)\d{8}$/u
+export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u
+export const PRODUCT_PRICE_PATTERN = /^\d{1,8}(\.\d{1,2})?$/u
 
 export const NAME_MAX_LENGTH = 100
 export const HOUSE_NO_MAX_LENGTH = 30
 export const STREET_MAX_LENGTH = 100
 export const AREA_NAME_MAX_LENGTH = 60
 export const KYC_IMAGE_MAX_BYTES = 5242880
+export const PRODUCT_NAME_MAX_LENGTH = 120
+export const PRODUCT_IMAGE_MAX_COUNT = 5
+export const PRODUCT_IMAGE_MAX_BYTES = 5242880
+export const EMAIL_MAX_LENGTH = 254
+export const ORDER_MAX_PRODUCTS = 20
+export const ORDER_MAX_CUSTOMERS = 1
+export const ORDER_IMAGE_MAX_COUNT = 5
+export const ORDER_IMAGE_MAX_BYTES = 5242880
+export const ORDER_EXPIRY_MINUTES = 15
+export const ORDER_PAGE_SIZES = [25, 50, 75, 100] as const
+export const PRODUCT_STOCK_MAX = 99999
+
+export const FEE_MINIMUM_SATANG = 1000
+export const FEE_TIERS = [
+	{ fromSatang: 100000, rateBps: 400 },
+	{ fromSatang: 50000, rateBps: 600 },
+	{ fromSatang: 0, rateBps: 800 },
+] as const
 
 export const BANK_CODES = [
 	"kbank",
@@ -30,3 +52,5 @@ export const BANK_CODES = [
 export type TBankCode = (typeof BANK_CODES)[number]
 
 export const KYC_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"]
+export const PRODUCT_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".avif"]
+export const PRODUCT_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"]

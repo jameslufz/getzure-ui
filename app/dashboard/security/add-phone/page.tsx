@@ -1,13 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
 import { T } from "@/app/i18n/T";
 import { FormField } from "@/app/components/FormField";
+import { Breadcrumb, PERSONAL_CRUMB } from "@/app/components/Breadcrumb";
 import { PageHeader } from "@/app/components/PageHeader";
 import { authClient } from "@/app/lib/auth-client";
 import { useSecurityStatus } from "@/app/hooks/useSecurityStatus";
@@ -44,7 +43,7 @@ type TRestoreOtpStep = (stored: NonNullable<ReturnType<typeof otpStorage.read>>)
 // second-step code, and it also becomes a number a sign-in code can be sent to.
 const AddPhonePage: TAddPhonePage = () => {
 	const router = useRouter()
-	const { status } = useSecurityStatus()
+	const { status, refresh } = useSecurityStatus()
 	const [step, setStep] = useState<TPhoneStep>("phone")
 	const [pendingPhone, setPendingPhone] = useState("")
 	const [otpRef, setOtpRef] = useState("")
@@ -135,6 +134,7 @@ const AddPhonePage: TAddPhonePage = () => {
 		if (error) return setServerError(kindFromAuthClientError(error))
 		otpStorage.clear()
 		showToast(<T k="security.addPhone.done">เพิ่มเบอร์โทรศัพท์แล้ว</T>)
+		refresh()
 		router.push(TWO_FACTOR_PATH)
 	}
 
@@ -145,13 +145,16 @@ const AddPhonePage: TAddPhonePage = () => {
 
 	return (
 		<div className="mx-auto max-w-xl space-y-6">
-			<Link
-				href={TWO_FACTOR_PATH}
-				className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-			>
-				<ArrowLeft className="h-4 w-4" />
-				<T k="security.back">กลับไปที่ความปลอดภัยสองชั้น</T>
-			</Link>
+			<Breadcrumb
+				items={[
+					PERSONAL_CRUMB,
+					{
+						label: <T k="security.twoFactor.title">ความปลอดภัยสองชั้น</T>,
+						href: TWO_FACTOR_PATH,
+					},
+					{ label: <T k="security.addPhone.title">เพิ่มเบอร์โทรศัพท์ของคุณ</T> },
+				]}
+			/>
 
 			<PageHeader
 				title={<T k="security.addPhone.title">เพิ่มเบอร์โทรศัพท์ของคุณ</T>}

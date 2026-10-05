@@ -1,6 +1,7 @@
 "use client"
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Fingerprint, Mail, ShieldCheck, Smartphone } from "lucide-react";
@@ -9,6 +10,9 @@ import { authClient } from "@/app/lib/auth-client";
 import { AuthShell } from "@/app/components/AuthShell";
 import { FormField } from "@/app/components/FormField";
 import { T } from "@/app/i18n/T";
+import { getQueryClient } from "@/app/lib/query-client";
+import { getQueryView } from "@/app/lib/query-fetch";
+import { queryKeys } from "@/app/lib/query-keys";
 import { getRedirectFromLocation } from "@/app/lib/session";
 import {
 	kindFromAuthClientError,
@@ -24,6 +28,13 @@ type TTwoFactorForm = { code: string }
 type TTwoFactorOptions = { methods: TTwoFactorMethod[]; primary: TTwoFactorMethod | null }
 type TMethodView = { icon: ReactNode; label: ReactNode }
 type TSignInTwoFactorPage = () => ReactNode
+type TFetchOptions = (signal?: AbortSignal) => Promise<TTwoFactorOptions | null>
+
+// Any non-ok answer means there is no sign-in waiting for a second step, which is a null result.
+const fetchOptions: TFetchOptions = async (signal) => {
+	const res = await fetch("/api/auth/two-factor/options", { signal })
+	return res.ok ? res.json() : null
+}
 
 const METHOD_VIEWS: Record<TTwoFactorMethod, TMethodView> = {
 	passkey: {
@@ -48,15 +59,24 @@ type TIsSentCodeMethod = (method: TStepMethod) => boolean
 
 const isSentCodeMethod: TIsSentCodeMethod = (method) => method === "email" || method === "phone"
 
-// Second step of a password sign-in for accounts with two-factor on. It asks the server which
-// methods this person turned on, offers their preferred one first, and keeps the others one tap
-// away. Passkeys are only started from a click (browsers require it), and codes by email or SMS
-// are only sent when asked, so a double render can't send two of them.
+// Second step of a password sign-in for accounts with two-factor on: it offers the preferred method
+// first and keeps the others one tap away. A preferred passkey starts by itself once, and codes by
+// email or SMS are only sent when asked.
 const SignInTwoFactorPage: TSignInTwoFactorPage = () => {
 	const router = useRouter()
-	const [options, setOptions] = useState<TTwoFactorOptions | null>(null)
-	const [loadFailed, setLoadFailed] = useState(false)
-	const [method, setMethod] = useState<TStepMethod | null>(null)
+	// A new sign-in step is never served from the cache.
+	const optionsQuery = useQuery({
+		queryKey: queryKeys.twoFactorOptions,
+		queryFn: ({ signal }) => fetchOptions(signal),
+		staleTime: 0,
+		gcTime: 0,
+		retry: false,
+	})
+	const options = optionsQuery.data
+	const optionsView = getQueryView(optionsQuery)
+	const [chosen, setChosen] = useState<TStepMethod | null | undefined>(undefined)
+	const method: TStepMethod | null = chosen === undefined ? (options?.primary ?? null) : chosen
+	const autoPasskeyStarted = useRef(false)
 	const [codeSent, setCodeSent] = useState(false)
 	const [busy, setBusy] = useState(false)
 	const [serverError, setServerError] = useState<TServerErrorKind | null>(null)
@@ -67,29 +87,27 @@ const SignInTwoFactorPage: TSignInTwoFactorPage = () => {
 		formState: { errors, isSubmitting },
 	} = useForm<TTwoFactorForm>()
 
-	useEffect(() => {
-		const loadOptions = async () => {
-			try {
-				const res = await fetch("/api/auth/two-factor/options")
-				if (!res.ok) throw new Error("no pending sign-in")
-				const data: TTwoFactorOptions = await res.json()
-				setOptions(data)
-				setMethod(data.primary)
-			} catch {
-				setLoadFailed(true)
-			}
-		}
-		loadOptions()
-	}, [])
-
-	const finishSignIn = () => router.push(getRedirectFromLocation() ?? "/dashboard")
+	const finishSignIn = useCallback(() => {
+		getQueryClient().clear()
+		router.push(getRedirectFromLocation() ?? "/dashboard")
+	}, [router])
 
 	const handleChooseMethod = (next: TStepMethod | null) => {
-		setMethod(next)
+		setChosen(next)
 		setCodeSent(false)
 		setServerError(null)
 		reset()
 	}
+
+	// The preferred passkey is started once on arrival; if the browser or the user says no, the button is still there.
+	useEffect(() => {
+		if (autoPasskeyStarted.current || options?.primary !== "passkey") return
+
+		autoPasskeyStarted.current = true
+		authClient.signIn.passkey().then(({ error }) => {
+			if (!error) finishSignIn()
+		})
+	}, [options, finishSignIn])
 
 	const handlePasskey = async () => {
 		setServerError(null)
@@ -159,13 +177,13 @@ const SignInTwoFactorPage: TSignInTwoFactorPage = () => {
 					</p>
 				)}
 
-				{loadFailed ? (
+				{options === null || optionsView === "failed" ? (
 					<p className="alert-error">
 						<T k="security.signIn.expired">
 							หมดเวลาหรือยังไม่ได้กรอกรหัสผ่าน กรุณาเข้าสู่ระบบใหม่อีกครั้ง
 						</T>
 					</p>
-				) : !options ? (
+				) : options === undefined ? (
 					<div className="h-24 animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800" />
 				) : (
 					<>

@@ -2,7 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 import { T } from "@/app/i18n/T";
+import { Breadcrumb, PERSONAL_CRUMB } from "@/app/components/Breadcrumb";
 import { PageHeader } from "@/app/components/PageHeader";
+import { QueryNotice } from "@/app/components/QueryNotice";
 import { AuthenticatorCard } from "@/app/components/pages/security/AuthenticatorCard";
 import { EmailTwoFactorCard } from "@/app/components/pages/security/EmailTwoFactorCard";
 import { PasskeyCard } from "@/app/components/pages/security/PasskeyCard";
@@ -17,7 +19,7 @@ import { getReauth, getServerReauth, subscribeReauth } from "@/app/lib/reauth";
 type TTwoFactorPage = () => React.ReactNode
 
 const TwoFactorPage: TTwoFactorPage = () => {
-	const { status, refresh } = useSecurityStatus()
+	const { status, view, retry, refresh } = useSecurityStatus()
 	const reauth = useSyncExternalStore(subscribeReauth, getReauth, getServerReauth)
 
 	// Accounts with no password can't be asked for one; their cards say to set one first.
@@ -26,6 +28,13 @@ const TwoFactorPage: TTwoFactorPage = () => {
 
 	return (
 		<div className="mx-auto max-w-xl space-y-6">
+			<Breadcrumb
+				items={[
+					PERSONAL_CRUMB,
+					{ label: <T k="security.twoFactor.title">ความปลอดภัยสองชั้น</T> },
+				]}
+			/>
+
 			<PageHeader
 				title={<T k="security.twoFactor.title">ความปลอดภัยสองชั้น</T>}
 				subtitle={
@@ -35,8 +44,10 @@ const TwoFactorPage: TTwoFactorPage = () => {
 				}
 			/>
 
-			{!status ? (
+			{status === undefined || view === "loading" ? (
 				<div className="card h-32 animate-pulse" />
+			) : status === null || view === "failed" ? (
+				<QueryNotice kind={view === "failed" ? "failed" : "unavailable"} onRetry={retry} />
 			) : needsPassword ? (
 				<PasswordGate />
 			) : (

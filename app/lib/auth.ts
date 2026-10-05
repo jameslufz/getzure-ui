@@ -301,7 +301,7 @@ export const auth = betterAuth({
 		}),
 		customSession(async ({ user, session }) => {
 			const { rows } = await pool.query(
-				`select full_name_th, full_name_en, bank, bank_account_no, bank_acocunt_name, kyc
+				`select full_name_th, full_name_en, bank, bank_account_mask, kyc, is_official
 				 from user_info where user_id = $1`,
 				[user.id],
 			)

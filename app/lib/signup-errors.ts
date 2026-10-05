@@ -81,6 +81,66 @@ export const SERVER_ERROR_MESSAGES = {
 		key: "auth.error.phoneAlreadySet" as TranslationKey,
 		th: "บัญชีนี้มีเบอร์โทรศัพท์ที่ยืนยันแล้ว ไม่สามารถเปลี่ยนได้",
 	},
+	invalidProductImage: {
+		key: "auth.error.invalidProductImage" as TranslationKey,
+		th: "รูปภาพต้องเป็นไฟล์ jpg, jpeg, png, webp หรือ avif",
+	},
+	tooManyImages: {
+		key: "auth.error.tooManyImages" as TranslationKey,
+		th: "อัปโหลดรูปภาพได้สูงสุด 5 รูป",
+	},
+	invalidCategory: {
+		key: "auth.error.invalidCategory" as TranslationKey,
+		th: "หมวดหมู่ที่เลือกใช้ไม่ได้ กรุณาเลือกใหม่",
+	},
+	noProducts: {
+		key: "auth.error.noProducts" as TranslationKey,
+		th: "กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ",
+	},
+	invalidProduct: {
+		key: "auth.error.invalidProduct" as TranslationKey,
+		th: "มีสินค้าที่ใช้ไม่ได้ กรุณาเอาออกแล้วลองใหม่",
+	},
+	outOfStock: {
+		key: "auth.error.outOfStock" as TranslationKey,
+		th: "สินค้ามีไม่พอ กรุณาลดจำนวนหรือเพิ่มสต็อกแล้วลองใหม่",
+	},
+	orderTotalTooLarge: {
+		key: "auth.error.orderTotalTooLarge" as TranslationKey,
+		th: "ยอดรวมของออเดอร์สูงเกินไป",
+	},
+	noPayer: {
+		key: "auth.error.noPayer" as TranslationKey,
+		th: "กรุณาระบุเบอร์โทรหรืออีเมลผู้ชำระ",
+	},
+	noOrderImage: {
+		key: "auth.error.noOrderImage" as TranslationKey,
+		th: "กรุณาเพิ่มภาพสินค้าที่พร้อมส่งอย่างน้อย 1 รูป",
+	},
+	invalidGuest: {
+		key: "auth.error.invalidGuest" as TranslationKey,
+		th: "ข้อมูลแขกไม่ถูกต้อง กรุณาตรวจเบอร์โทร ชื่อไทย ธนาคาร และเลขบัญชี",
+	},
+	tooManyProducts: {
+		key: "auth.error.tooManyProducts" as TranslationKey,
+		th: "เพิ่มสินค้าในออเดอร์ได้สูงสุด 20 รายการ",
+	},
+	invalidCustomer: {
+		key: "auth.error.invalidCustomer" as TranslationKey,
+		th: "เบอร์โทรศัพท์หรืออีเมลของผู้ชำระไม่ถูกต้อง",
+	},
+	cannotTagSelf: {
+		key: "auth.error.cannotTagSelf" as TranslationKey,
+		th: "ไม่สามารถระบุตัวเองเป็นผู้ชำระได้",
+	},
+	tooManyCustomers: {
+		key: "auth.error.tooManyCustomers" as TranslationKey,
+		th: "ออเดอร์มีผู้ชำระได้ 1 คน",
+	},
+	invalidOrderImage: {
+		key: "auth.error.invalidOrderImage" as TranslationKey,
+		th: "รูปภาพต้องเป็นไฟล์ jpg, jpeg, png, webp หรือ avif",
+	},
 	tooManyRequests: {
 		key: "auth.error.tooManyRequests" as TranslationKey,
 		th: "ส่งคำขอบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง",
@@ -133,6 +193,23 @@ export const SIGNUP_ERROR_CODE_MAP: Record<string, TServerErrorKind> = {
 	TWO_FACTOR_REQUIRED: "unauthorized",
 	PASSKEY_NOT_ALLOWED: "passkeyFailed",
 	PHONE_ALREADY_SET: "phoneAlreadySet",
+	INVALID_PRODUCT_IMAGE: "invalidProductImage",
+	INVALID_PROFILE_IMAGE: "invalidProductImage",
+	TOO_MANY_IMAGES: "tooManyImages",
+	INVALID_CATEGORY: "invalidCategory",
+	NO_PRODUCTS: "noProducts",
+	INVALID_PRODUCT: "invalidProduct",
+	DUPLICATE_PRODUCT: "invalidProduct",
+	OUT_OF_STOCK: "outOfStock",
+	ORDER_TOTAL_TOO_LARGE: "orderTotalTooLarge",
+	TOO_MANY_PRODUCTS: "tooManyProducts",
+	INVALID_CUSTOMER: "invalidCustomer",
+	NO_PAYER: "noPayer",
+	NO_ORDER_IMAGE: "noOrderImage",
+	INVALID_GUEST: "invalidGuest",
+	CANNOT_TAG_SELF: "cannotTagSelf",
+	TOO_MANY_CUSTOMERS: "tooManyCustomers",
+	INVALID_ORDER_IMAGE: "invalidOrderImage",
 	TOO_MANY_REQUESTS: "tooManyRequests",
 	INFO_ALREADY_EXISTS: "generic",
 	VALIDATION_ERROR: "validationError",

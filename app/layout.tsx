@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
+import { QueryProvider } from "@/app/components/QueryProvider";
 import { Toaster } from "@/app/components/Toaster";
 
 const notoSansThai = Noto_Sans_Thai({
@@ -36,7 +37,7 @@ const RootLayout = ({ children }: LayoutProps<"/">) => {
 		>
 			<body className="min-h-full flex flex-col">
 				<script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-				{children}
+				<QueryProvider>{children}</QueryProvider>
 				<Toaster />
 			</body>
 		</html>

@@ -1,13 +1,10 @@
 import z from "zod";
 
-import { NATIONAL_ID_PATTERN } from "@/app/lib/validation-rules.generated";
+import { NATIONAL_ID_PATTERN, PHONE_NUMBER_PATTERN } from "@/app/lib/validation-rules.generated";
 
 // The sign-up and ID-verification rules (patterns, lengths, bank codes, image limits) are generated
 // from the Go service, which is where they are enforced; see validation-rules.generated.ts.
 export * from "@/app/lib/validation-rules.generated"
-
-// Rules for the Next API routes that stay here (sign-up OTP, password, two-factor).
-export const PHONE_NUMBER_PATTERN = /^(06|08|09)\d{8}$/
 
 type TIsValidNationalId = (id: string) => boolean
 

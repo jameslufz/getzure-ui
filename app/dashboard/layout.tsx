@@ -10,6 +10,7 @@ import { clearClientSession, handleSessionExpired } from "@/app/lib/session";
 import { Search, Bell, Menu, X, LogOut } from "lucide-react";
 import clsx from "clsx";
 import Navbar from "../components/main-layout/Navbar";
+import { VerifiedMark } from "@/app/components/VerifiedMark";
 
 type TGetInitials = (name?: string | null) => string
 
@@ -26,6 +27,9 @@ const getInitials: TGetInitials = (name) => {
 	return name.slice(0, 2).toUpperCase()
 }
 
+// What customSession in auth.ts adds to the user.
+type TSessionUserInfo = { kyc: boolean; is_official: boolean } | null
+type TSessionUser = { userInfo?: TSessionUserInfo }
 type TDashboardLayoutProps = { children: React.ReactNode }
 type TDashboardLayout = (props: TDashboardLayoutProps) => React.ReactNode
 
@@ -34,6 +38,7 @@ const DashboardLayout: TDashboardLayout = ({ children }) => {
 	const [mobileNavOpen, setMobileNavOpen] = useState(false)
 	const { data: session, isPending, error } = authClient.useSession()
 	const user = session && session.user
+	const userInfo = (user as TSessionUser | null)?.userInfo ?? null
 
 	// "No session and no error" is the server saying the session is gone (an error is just a
 	// failed request). It also fires when the tab regains focus, because useSession refetches.
@@ -94,8 +99,16 @@ const DashboardLayout: TDashboardLayout = ({ children }) => {
 							{getInitials(user && user.name)}
 						</div>
 						<div className="min-w-0 flex-1">
-							<p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
-								{user && user.name}
+							<p className="flex items-center gap-1 text-sm font-medium text-zinc-900 dark:text-zinc-50">
+								<span className="truncate">{user && user.name}</span>
+								{user && (
+									<VerifiedMark
+										verified={!!userInfo?.kyc}
+										official={!!userInfo?.is_official}
+										placement="top"
+										className="[&>svg]:h-4 [&>svg]:w-4"
+									/>
+								)}
 							</p>
 							<p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
 								{user && user.email}
