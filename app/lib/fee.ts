@@ -1,9 +1,10 @@
-import { FEE_MINIMUM_SATANG, FEE_TIERS } from "@/app/lib/validation";
+import { FEE_MINIMUM_SATANG, FEE_TIERS, VAT_RATE_PERCENT } from "@/app/lib/validation";
 
-export type TFeeBreakdown = { price: number; fee: number; net: number }
+export type TFeeBreakdown = { price: number; fee: number; vat: number; net: number }
 
 type TToSatang = (value: string) => number | null
 type TCalculateFee = (priceSatang: number) => number
+type TVatInFee = (feeSatang: number) => number
 type TBreakDownSatang = (priceSatang: number) => TFeeBreakdown
 type TBreakDown = (value: string) => TFeeBreakdown | null
 
@@ -26,9 +27,19 @@ export const calculateFee: TCalculateFee = (priceSatang) => {
 	return Math.min(Math.max(fee, FEE_MINIMUM_SATANG), priceSatang)
 }
 
+// The VAT inside a VAT-included fee (never added on): fee x rate / (100 + rate), to the satang.
+export const vatInFee: TVatInFee = (feeSatang) => {
+	return Math.round((feeSatang * VAT_RATE_PERCENT) / (100 + VAT_RATE_PERCENT))
+}
+
 export const breakDownSatang: TBreakDownSatang = (priceSatang) => {
 	const fee = calculateFee(priceSatang)
-	return { price: priceSatang / 100, fee: fee / 100, net: (priceSatang - fee) / 100 }
+	return {
+		price: priceSatang / 100,
+		fee: fee / 100,
+		vat: vatInFee(fee) / 100,
+		net: (priceSatang - fee) / 100,
+	}
 }
 
 export const breakDown: TBreakDown = (value) => {

@@ -2,7 +2,6 @@
 
 import { FormEventHandler, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { NumericFormat } from "react-number-format";
 import Link from "next/link";
 import { Check, CircleCheck, Copy, ImageOff, PackagePlus, Trash2 } from "lucide-react";
 import { T } from "@/app/i18n/T";
@@ -12,6 +11,7 @@ import { Modal } from "@/app/components/Modal";
 import { Breadcrumb, PAYMENT_CRUMB } from "@/app/components/Breadcrumb";
 import { PageHeader } from "@/app/components/PageHeader";
 import { useInvalidate } from "@/app/hooks/useInvalidate";
+import { QuantityInput } from "@/app/components/QuantityInput";
 import { ProductForm } from "@/app/components/ProductForm";
 import { ProductPicker } from "@/app/components/ProductPicker";
 import {
@@ -42,6 +42,7 @@ import {
 	ORDER_MAX_PRODUCTS,
 	PRODUCT_IMAGE_EXTENSIONS,
 	PRODUCT_IMAGE_MIME_TYPES,
+	SHOW_VAT_TO_CREATOR,
 } from "@/app/lib/validation"
 
 type TOrderLine = { product: TProductSummary; quantity: number }
@@ -278,7 +279,7 @@ const CreateOrderPage: TCreateOrderPage = () => {
 									<th className="px-3 py-2 text-right font-medium">
 										<T k="orders.create.colPrice">ราคา</T>
 									</th>
-									<th className="w-28 px-3 py-2 text-right font-medium">
+									<th className="w-40 px-3 py-2 text-center font-medium">
 										<T k="orders.create.colQuantity">จำนวน</T>
 									</th>
 									<th className="px-3 py-2 text-right font-medium">
@@ -328,19 +329,14 @@ const CreateOrderPage: TCreateOrderPage = () => {
 												{formatAmount(Number(product.price), "THB")}
 											</td>
 											<td className="px-3 py-2">
-												<NumericFormat
-													allowNegative={false}
-													decimalScale={0}
-													inputMode="numeric"
-													value={quantity}
-													onValueChange={(values) =>
-														setQuantity(
-															product.id,
-															values.floatValue ?? 1,
-														)
+												<QuantityInput
+													label="Quantity"
+													value={String(quantity)}
+													onChange={(next) =>
+														setQuantity(product.id, Number(next) || 1)
 													}
-													aria-label="Quantity"
-													className="input text-right"
+													min={1}
+													max={product.stock}
 												/>
 											</td>
 											<td className="px-3 py-2 text-right font-medium whitespace-nowrap text-zinc-900 dark:text-zinc-50">
@@ -374,24 +370,46 @@ const CreateOrderPage: TCreateOrderPage = () => {
 					</div>
 
 					{items.length > 0 && (
-						<dl className="space-y-1 rounded-md bg-zinc-50 p-4 text-sm dark:bg-zinc-800/50">
+						<dl className="rounded-md bg-zinc-50 p-4 text-sm dark:bg-zinc-800/50">
 							<div className="flex justify-between">
-								<dt className="text-zinc-500 dark:text-zinc-400">
-									<T k="orders.create.summaryTotal">ยอดรวมออเดอร์</T>
+								<dt className="text-zinc-600 dark:text-zinc-300">
+									<T k="orders.create.summaryPay">ยอดชำระสุทธิ</T>
 								</dt>
-								<dd>{formatAmount(summary.price, "THB")}</dd>
+								<dd className="text-zinc-900 dark:text-zinc-50">
+									{formatAmount(summary.price, "THB")}
+								</dd>
 							</div>
-							<div className="flex justify-between">
-								<dt className="text-zinc-500 dark:text-zinc-400">
-									<T k="orders.create.summaryFee">ค่าธรรมเนียม (รวม VAT)</T>
-								</dt>
-								<dd>{formatAmount(summary.fee, "THB")}</dd>
-							</div>
-							<div className="flex justify-between text-base font-semibold text-zinc-900 dark:text-zinc-50">
-								<dt>
-									<T k="orders.create.summaryNet">สุทธิ</T>
-								</dt>
-								<dd>{formatAmount(summary.net, "THB")}</dd>
+							<div className="mt-3 space-y-2 border-t border-zinc-200 pt-3 dark:border-zinc-700">
+								<div className="flex justify-between">
+									<dt className="text-zinc-500 dark:text-zinc-400">
+										<T k="orders.create.summaryFee">ค่าธรรมเนียม</T>
+									</dt>
+									<dd className="text-zinc-500 dark:text-zinc-400">
+										− {formatAmount(summary.fee, "THB")}
+									</dd>
+								</div>
+								{SHOW_VAT_TO_CREATOR && (
+									<div className="flex justify-between text-xs">
+										<dt className="text-zinc-400 dark:text-zinc-500">
+											<T k="orders.create.summaryVat">
+												VAT 7% ที่รวมอยู่ในค่าธรรมเนียม
+											</T>
+										</dt>
+										<dd className="text-zinc-500 dark:text-zinc-400">
+											{formatAmount(summary.vat, "THB")}
+										</dd>
+									</div>
+								)}
+								<div className="flex items-baseline justify-between">
+									<dt className="font-medium text-zinc-900 dark:text-zinc-50">
+										<T k="orders.create.summaryReceive">
+											ยอดที่คุณจะได้รับสุทธิ
+										</T>
+									</dt>
+									<dd className="text-xl font-semibold text-teal-700 dark:text-teal-400">
+										{formatAmount(summary.net, "THB")}
+									</dd>
+								</div>
 							</div>
 						</dl>
 					)}

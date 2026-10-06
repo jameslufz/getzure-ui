@@ -1,1 +1,1 @@
-export type TSecurityLevel = "low" | "medium" | "high"
+export type TSecurityLevel = "very_low" | "low" | "high" | "very_high"

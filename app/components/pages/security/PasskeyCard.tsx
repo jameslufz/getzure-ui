@@ -1,6 +1,8 @@
 import { ReactNode, useState } from "react";
 import { Fingerprint, Trash2 } from "lucide-react";
 import { T } from "@/app/i18n/T";
+import { translations } from "@/app/i18n/translations";
+import { useLanguage } from "@/app/i18n/useLanguage";
 import { authClient } from "@/app/lib/auth-client";
 import { FactorCard } from "./FactorCard";
 import {
@@ -13,6 +15,7 @@ type TPasskeyCardProps = { onChanged: () => void }
 type TPasskeyCard = (props: TPasskeyCardProps) => ReactNode
 
 export const PasskeyCard: TPasskeyCard = ({ onChanged }) => {
+	const lang = useLanguage()
 	const { data: passkeys, refetch } = authClient.useListPasskeys()
 	const [name, setName] = useState("")
 	const [busy, setBusy] = useState(false)
@@ -95,7 +98,12 @@ export const PasskeyCard: TPasskeyCard = ({ onChanged }) => {
 					maxLength={50}
 					value={name}
 					onChange={(e) => setName(e.target.value)}
-					placeholder="ชื่ออุปกรณ์ของคุณ เช่น MacBook, iPhone"
+					placeholder={
+						lang === "th"
+							? "ตั้งชื่ออุปกรณ์นี้ เช่น iPhone ของฉัน (ไม่บังคับ)"
+							: translations["security.passkey.namePlaceholder"]
+					}
+					aria-label={translations["security.passkey.namePlaceholder"]}
 					className="input"
 				/>
 				<button

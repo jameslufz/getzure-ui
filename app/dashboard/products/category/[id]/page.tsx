@@ -8,6 +8,7 @@ import { FolderOpen } from "lucide-react";
 import { T } from "@/app/i18n/T";
 import { useLanguage } from "@/app/i18n/useLanguage";
 import { Breadcrumb, PRODUCTS_CRUMB, TCrumb } from "@/app/components/Breadcrumb";
+import { CategorySkeleton } from "@/app/components/skeletons/PageSkeletons";
 import { PageHeader } from "@/app/components/PageHeader";
 import { ProductBrowser } from "@/app/components/ProductBrowser";
 import { QueryNotice } from "@/app/components/QueryNotice";
@@ -91,8 +92,7 @@ const CategoryPage: TCategoryPage = () => {
 	const { data: category } = query
 	const queryView = getQueryView(query)
 
-	if (queryView === "loading" || category === undefined)
-		return <div className="card mx-auto h-40 max-w-6xl animate-pulse" />
+	if (queryView === "loading" || category === undefined) return <CategorySkeleton />
 	if (category === null || queryView === "failed") {
 		return (
 			<div className="mx-auto max-w-xl">

@@ -4,28 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/app/components/ThemeToggle";
 import { LanguageToggle } from "@/app/components/LanguageToggle";
-import { T } from "@/app/i18n/T";
 import { authClient } from "@/app/lib/auth-client";
 import { clearClientSession, handleSessionExpired } from "@/app/lib/session";
-import { Search, Bell, Menu, X, LogOut } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import clsx from "clsx";
 import Navbar from "../components/main-layout/Navbar";
-import { VerifiedMark } from "@/app/components/VerifiedMark";
-
-type TGetInitials = (name?: string | null) => string
-
-const getInitials: TGetInitials = (name) => {
-	if (!name) return "?"
-	const words = name.split(" ").filter(Boolean)
-	if (words.length > 1) {
-		return words
-			.slice(0, 2)
-			.map((word) => word[0])
-			.join("")
-			.toUpperCase()
-	}
-	return name.slice(0, 2).toUpperCase()
-}
+import { GlobalSearch } from "@/app/components/main-layout/GlobalSearch";
+import { NotificationBell } from "@/app/components/main-layout/NotificationBell";
+import { SidebarUser, TSidebarUser } from "@/app/components/main-layout/SidebarUser";
 
 // What customSession in auth.ts adds to the user.
 type TSessionUserInfo = { kyc: boolean; is_official: boolean } | null
@@ -36,9 +22,17 @@ type TDashboardLayout = (props: TDashboardLayoutProps) => React.ReactNode
 const DashboardLayout: TDashboardLayout = ({ children }) => {
 	const router = useRouter()
 	const [mobileNavOpen, setMobileNavOpen] = useState(false)
-	const { data: session, isPending, error } = authClient.useSession()
-	const user = session && session.user
-	const userInfo = (user as TSessionUser | null)?.userInfo ?? null
+	const { data: session, isPending, error, refetch } = authClient.useSession()
+	const sessionUser = session && session.user
+	const user: TSidebarUser | null | undefined = isPending
+		? undefined
+		: sessionUser
+			? {
+					name: sessionUser.name,
+					email: sessionUser.email,
+					userInfo: (sessionUser as TSessionUser).userInfo ?? null,
+				}
+			: null
 
 	// "No session and no error" is the server saying the session is gone (an error is just a
 	// failed request). It also fires when the tab regains focus, because useSession refetches.
@@ -93,36 +87,12 @@ const DashboardLayout: TDashboardLayout = ({ children }) => {
 
 				<Navbar />
 
-				<div className="shrink-0 border-t border-zinc-200 p-4 dark:border-zinc-800">
-					<div className="flex items-center gap-3 rounded-md p-2">
-						<div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-200 text-sm font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
-							{getInitials(user && user.name)}
-						</div>
-						<div className="min-w-0 flex-1">
-							<p className="flex items-center gap-1 text-sm font-medium text-zinc-900 dark:text-zinc-50">
-								<span className="truncate">{user && user.name}</span>
-								{user && (
-									<VerifiedMark
-										verified={!!userInfo?.kyc}
-										official={!!userInfo?.is_official}
-										placement="top"
-										className="[&>svg]:h-4 [&>svg]:w-4"
-									/>
-								)}
-							</p>
-							<p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
-								{user && user.email}
-							</p>
-						</div>
-						<button
-							aria-label="Sign out"
-							onClick={handleSignOut}
-							className="rounded-md p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
-						>
-							<LogOut className="h-4 w-4" />
-						</button>
-					</div>
-				</div>
+				<SidebarUser
+					user={user}
+					failed={!!error}
+					onRetry={() => refetch()}
+					onSignOut={handleSignOut}
+				/>
 			</aside>
 
 			<div className="flex min-w-0 flex-1 flex-col">
@@ -135,24 +105,10 @@ const DashboardLayout: TDashboardLayout = ({ children }) => {
 						<Menu className="h-5 w-5" />
 					</button>
 					<div className="ml-auto flex items-center gap-3">
-						<div className="hidden items-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 sm:flex">
-							<Search className="h-4 w-4" />
-							<span>
-								<T k="header.search">ค้นหา...</T>
-							</span>
-						</div>
+						<GlobalSearch />
 						<LanguageToggle />
 						<ThemeToggle />
-						<button
-							aria-label="Notifications"
-							className="relative rounded-md p-2 text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-						>
-							<Bell className="h-5 w-5" />
-							<span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500" />
-						</button>
-						<div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 text-xs font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
-							{getInitials(user && user.name)}
-						</div>
+						<NotificationBell />
 					</div>
 				</header>
 

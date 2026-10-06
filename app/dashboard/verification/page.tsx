@@ -1,11 +1,13 @@
 "use client"
 
+import clsx from "clsx";
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { T } from "@/app/i18n/T";
 import { FormField } from "@/app/components/FormField";
 import { Breadcrumb, PERSONAL_CRUMB, TCrumb } from "@/app/components/Breadcrumb";
+import { FormSkeleton } from "@/app/components/skeletons/PageSkeletons";
 import { PageHeader } from "@/app/components/PageHeader";
 import { QueryNotice } from "@/app/components/QueryNotice";
 import { useInvalidate } from "@/app/hooks/useInvalidate";
@@ -31,13 +33,14 @@ import {
 	POSTCODE_PATTERN,
 } from "@/app/lib/validation"
 
-type TVerificationStatus = "none" | "pending" | "verified"
+type TVerificationStatus = "none" | "pending" | "verified" | "rejected"
 
 type TVerificationInfo = {
 	status: TVerificationStatus
 	personalIdMask?: string
 	personalIdExp?: string
 	hasImage?: boolean
+	rejectReason?: string | null
 }
 
 type TVerificationForm = {
@@ -76,7 +79,7 @@ const today = () => new Date().toLocaleDateString("en-CA")
 const ADDRESS_FIELDS: TAddressField[] = [
 	{
 		name: "houseNo",
-		label: <T k="verification.form.houseNo">บ้านเลขที่</T>,
+		label: <T k="verification.form.houseNo">บ้านเลขที่/ชื่อหมู่บ้าน</T>,
 		maxLength: HOUSE_NO_MAX_LENGTH,
 	},
 	{
@@ -155,7 +158,9 @@ const VerificationPage: TVerificationPage = () => {
 			<div className="mx-auto max-w-xl space-y-6">
 				<Breadcrumb items={crumbs} />
 				{queryView === "loading" || info === undefined ? (
-					<div className="card h-64 animate-pulse" />
+					<div className="card">
+						<FormSkeleton count={6} />
+					</div>
 				) : (
 					<QueryNotice
 						kind={queryView === "failed" ? "failed" : "unavailable"}
@@ -185,8 +190,10 @@ const VerificationPage: TVerificationPage = () => {
 		)
 	}
 
+	const pending = info.status === "pending"
+
 	return (
-		<div className="mx-auto max-w-xl space-y-6">
+		<div className={clsx("mx-auto space-y-6", pending ? "max-w-5xl" : "max-w-xl")}>
 			<Breadcrumb items={crumbs} />
 			<PageHeader
 				title={<T k="verification.title">การยืนยันตัวตน</T>}
@@ -197,168 +204,198 @@ const VerificationPage: TVerificationPage = () => {
 				}
 			/>
 
-			{info.status === "pending" && (
-				<div className="card space-y-3">
-					<p className="alert-success">
-						<T k="verification.pending">
-							ส่งข้อมูลแล้ว กำลังรอการตรวจสอบ
-							คุณสามารถส่งข้อมูลใหม่เพื่อแทนที่ข้อมูลเดิมได้
-						</T>
-					</p>
-					<p className="text-sm text-zinc-500 dark:text-zinc-400">
-						<T k="verification.pending.idMask">เลขบัตรประชาชนที่ส่ง</T>:{" "}
-						{info.personalIdMask}
-					</p>
-					{info.hasImage && (
-						// eslint-disable-next-line @next/next/no-img-element
-						<img
-							src={`${clientServiceUrl("/verification/image")}?v=${query.dataUpdatedAt}`}
-							alt=""
-							className="max-h-56 rounded-md border border-zinc-200 object-contain dark:border-zinc-700"
-						/>
-					)}
-				</div>
-			)}
-
-			<form onSubmit={handleSubmit(onSubmit)} className="card space-y-4" noValidate>
-				{serverError && (
-					<p className="alert-error">
-						<T k={SERVER_ERROR_MESSAGES[serverError].key}>
-							{SERVER_ERROR_MESSAGES[serverError].th}
-						</T>
-					</p>
-				)}
-				{submitted && (
-					<p className="alert-success">
-						<T k="verification.submitted">ส่งข้อมูลเรียบร้อยแล้ว กำลังรอการตรวจสอบ</T>
-					</p>
-				)}
-
-				<FormField
-					required
-					label={<T k="verification.form.personalId">เลขบัตรประชาชน</T>}
-					error={
-						errors.personalId && (
-							<T k="verification.form.error.personalId">เลขบัตรประชาชนไม่ถูกต้อง</T>
-						)
-					}
-				>
-					<input
-						type="text"
-						inputMode="numeric"
-						maxLength={13}
-						autoComplete="off"
-						placeholder="1234567890123"
-						{...register("personalId", {
-							required: true,
-							validate: isValidNationalId,
-							setValueAs: (value: string) => value.replace(/\D/g, ""),
-						})}
-						aria-invalid={!!errors.personalId}
-						className="input"
-					/>
-				</FormField>
-
-				<FormField
-					required
-					label={<T k="verification.form.personalIdExp">วันหมดอายุบัตร</T>}
-					error={
-						errors.personalIdExp && (
-							<T k="verification.form.error.personalIdExp">
-								กรุณาระบุวันหมดอายุที่ยังไม่หมดอายุ
+			<div className={clsx("grid items-start gap-6", pending && "lg:grid-cols-2")}>
+				{info.status === "rejected" && (
+					<div className="card space-y-2">
+						<p className="alert-error">
+							<T k="verification.rejected">
+								ข้อมูลยืนยันตัวตนไม่ผ่านการตรวจสอบ กรุณาแก้ไขแล้วส่งใหม่อีกครั้ง
 							</T>
-						)
-					}
-				>
-					<Controller
-						name="personalIdExp"
-						control={control}
-						rules={{ required: true, validate: (value) => value >= today() }}
-						render={({ field }) => (
-							<DatePicker
-								value={field.value ?? ""}
-								onChange={field.onChange}
-								minDate={today()}
-								invalid={!!errors.personalIdExp}
+						</p>
+						{info.rejectReason && (
+							<p className="text-sm text-zinc-600 dark:text-zinc-300">
+								<span className="font-medium">
+									<T k="verification.rejected.reason">เหตุผล</T>:
+								</span>{" "}
+								{info.rejectReason}
+							</p>
+						)}
+					</div>
+				)}
+
+				{pending && (
+					<div className="card space-y-3 lg:order-2">
+						<p className="alert-success">
+							<T k="verification.pending">
+								ส่งข้อมูลแล้ว กำลังรอการตรวจสอบ
+								คุณสามารถส่งข้อมูลใหม่เพื่อแทนที่ข้อมูลเดิมได้
+							</T>
+						</p>
+						<p className="text-sm text-zinc-500 dark:text-zinc-400">
+							<T k="verification.pending.idMask">เลขบัตรประชาชนที่ส่ง</T>:{" "}
+							{info.personalIdMask}
+						</p>
+						{info.hasImage && (
+							// eslint-disable-next-line @next/next/no-img-element
+							<img
+								src={`${clientServiceUrl("/verification/image")}?v=${query.dataUpdatedAt}`}
+								alt=""
+								className="max-h-56 rounded-md border border-zinc-200 object-contain dark:border-zinc-700"
 							/>
 						)}
-					/>
-				</FormField>
+					</div>
+				)}
 
-				{ADDRESS_FIELDS.map(({ name, label, maxLength }) => (
+				<form
+					onSubmit={handleSubmit(onSubmit)}
+					className="card space-y-4 lg:order-1"
+					noValidate
+				>
+					{serverError && (
+						<p className="alert-error">
+							<T k={SERVER_ERROR_MESSAGES[serverError].key}>
+								{SERVER_ERROR_MESSAGES[serverError].th}
+							</T>
+						</p>
+					)}
+					{submitted && (
+						<p className="alert-success">
+							<T k="verification.submitted">
+								ส่งข้อมูลเรียบร้อยแล้ว กำลังรอการตรวจสอบ
+							</T>
+						</p>
+					)}
+
 					<FormField
-						key={name}
 						required
-						label={label}
+						label={<T k="verification.form.personalId">เลขบัตรประชาชน</T>}
 						error={
-							errors[name] && <T k="auth.form.error.required">กรุณากรอกข้อมูลนี้</T>
+							errors.personalId && (
+								<T k="verification.form.error.personalId">
+									เลขบัตรประชาชนไม่ถูกต้อง
+								</T>
+							)
 						}
 					>
 						<input
 							type="text"
-							maxLength={maxLength}
-							{...register(name, {
+							inputMode="numeric"
+							maxLength={13}
+							autoComplete="off"
+							placeholder="1234567890123"
+							{...register("personalId", {
 								required: true,
-								setValueAs: (value: string) => value.trim(),
-								pattern: ADDRESS_TEXT_PATTERN,
+								validate: isValidNationalId,
+								setValueAs: (value: string) => value.replace(/\D/g, ""),
 							})}
-							aria-invalid={!!errors[name]}
+							aria-invalid={!!errors.personalId}
 							className="input"
 						/>
 					</FormField>
-				))}
 
-				<FormField
-					required
-					label={<T k="verification.form.postcode">รหัสไปรษณีย์</T>}
-					error={
-						errors.postcode && (
-							<T k="verification.form.error.postcode">
-								รหัสไปรษณีย์ต้องเป็นตัวเลข 5 หลัก
+					<FormField
+						required
+						label={<T k="verification.form.personalIdExp">วันหมดอายุบัตร</T>}
+						error={
+							errors.personalIdExp && (
+								<T k="verification.form.error.personalIdExp">
+									กรุณาระบุวันหมดอายุที่ยังไม่หมดอายุ
+								</T>
+							)
+						}
+					>
+						<Controller
+							name="personalIdExp"
+							control={control}
+							rules={{ required: true, validate: (value) => value >= today() }}
+							render={({ field }) => (
+								<DatePicker
+									value={field.value ?? ""}
+									onChange={field.onChange}
+									minDate={today()}
+									invalid={!!errors.personalIdExp}
+								/>
+							)}
+						/>
+					</FormField>
+
+					{ADDRESS_FIELDS.map(({ name, label, maxLength }) => (
+						<FormField
+							key={name}
+							required
+							label={label}
+							error={
+								errors[name] && (
+									<T k="auth.form.error.required">กรุณากรอกข้อมูลนี้</T>
+								)
+							}
+						>
+							<input
+								type="text"
+								maxLength={maxLength}
+								{...register(name, {
+									required: true,
+									setValueAs: (value: string) => value.trim(),
+									pattern: ADDRESS_TEXT_PATTERN,
+								})}
+								aria-invalid={!!errors[name]}
+								className="input"
+							/>
+						</FormField>
+					))}
+
+					<FormField
+						required
+						label={<T k="verification.form.postcode">รหัสไปรษณีย์</T>}
+						error={
+							errors.postcode && (
+								<T k="verification.form.error.postcode">
+									รหัสไปรษณีย์ต้องเป็นตัวเลข 5 หลัก
+								</T>
+							)
+						}
+					>
+						<input
+							type="text"
+							inputMode="numeric"
+							maxLength={5}
+							{...register("postcode", { required: true, pattern: POSTCODE_PATTERN })}
+							aria-invalid={!!errors.postcode}
+							className="input"
+						/>
+					</FormField>
+
+					<FormField
+						required
+						label={<T k="verification.form.photo">รูปถ่ายคู่บัตรประชาชน</T>}
+						hint={
+							<T k="verification.form.photoHint">
+								ถ่ายรูปตัวคุณถือบัตรประชาชน ให้เห็นหน้าและข้อมูลบนบัตรชัดเจน (JPEG,
+								PNG หรือ WebP ไม่เกิน 10 MB)
 							</T>
-						)
-					}
-				>
-					<input
-						type="text"
-						inputMode="numeric"
-						maxLength={5}
-						{...register("postcode", { required: true, pattern: POSTCODE_PATTERN })}
-						aria-invalid={!!errors.postcode}
-						className="input"
-					/>
-				</FormField>
+						}
+						error={
+							errors.idCardPhoto && (
+								<T k="verification.form.error.photo">
+									กรุณาเลือกรูปภาพ JPEG, PNG หรือ WebP ขนาดไม่เกิน 10 MB
+								</T>
+							)
+						}
+					>
+						<input
+							type="file"
+							accept={KYC_IMAGE_MIME_TYPES.join(",")}
+							{...register("idCardPhoto", { validate: validatePhoto })}
+							aria-invalid={!!errors.idCardPhoto}
+							className="input"
+						/>
+					</FormField>
 
-				<FormField
-					required
-					label={<T k="verification.form.photo">รูปถ่ายคู่บัตรประชาชน</T>}
-					hint={
-						<T k="verification.form.photoHint">
-							ถ่ายรูปตัวคุณถือบัตรประชาชน ให้เห็นหน้าและข้อมูลบนบัตรชัดเจน (JPEG, PNG
-							หรือ WebP ไม่เกิน 5 MB)
-						</T>
-					}
-					error={
-						errors.idCardPhoto && (
-							<T k="verification.form.error.photo">
-								กรุณาเลือกรูปภาพ JPEG, PNG หรือ WebP ขนาดไม่เกิน 5 MB
-							</T>
-						)
-					}
-				>
-					<input
-						type="file"
-						accept={KYC_IMAGE_MIME_TYPES.join(",")}
-						{...register("idCardPhoto", { validate: validatePhoto })}
-						aria-invalid={!!errors.idCardPhoto}
-						className="input"
-					/>
-				</FormField>
-
-				<button type="submit" disabled={isSubmitting} className="btn-primary w-full">
-					<T k="verification.submit">ส่งข้อมูลเพื่อยืนยันตัวตน</T>
-				</button>
-			</form>
+					<button type="submit" disabled={isSubmitting} className="btn-primary w-full">
+						<T k="verification.submit">ส่งข้อมูลเพื่อยืนยันตัวตน</T>
+					</button>
+				</form>
+			</div>
 		</div>
 	)
 }

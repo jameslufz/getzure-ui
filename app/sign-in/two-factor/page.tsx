@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Fingerprint, Mail, ShieldCheck, Smartphone } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { authClient } from "@/app/lib/auth-client";
+import { FormSkeleton } from "@/app/components/skeletons/PageSkeletons";
 import { AuthShell } from "@/app/components/AuthShell";
 import { FormField } from "@/app/components/FormField";
 import { T } from "@/app/i18n/T";
@@ -184,7 +185,7 @@ const SignInTwoFactorPage: TSignInTwoFactorPage = () => {
 						</T>
 					</p>
 				) : options === undefined ? (
-					<div className="h-24 animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800" />
+					<FormSkeleton count={1} />
 				) : (
 					<>
 						{method && method !== "backup" && (

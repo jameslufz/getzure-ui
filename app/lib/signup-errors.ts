@@ -47,7 +47,7 @@ export const SERVER_ERROR_MESSAGES = {
 	},
 	imageTooLarge: {
 		key: "auth.error.imageTooLarge" as TranslationKey,
-		th: "ไฟล์รูปภาพใหญ่เกินไป (ไม่เกิน 5 MB)",
+		th: "ไฟล์รูปภาพใหญ่เกินไป",
 	},
 	kycAlreadyVerified: {
 		key: "auth.error.kycAlreadyVerified" as TranslationKey,

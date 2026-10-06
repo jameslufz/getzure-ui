@@ -21,7 +21,7 @@ export const queryKeys = {
 		detail: (id: string) => ["orders", "detail", id] as const,
 	},
 	guestOrder: (id: string) => ["guest-order", id] as const,
-	guestImage: (path: string) => ["guest-order", "image", path] as const,
+	notifications: ["notifications"] as const,
 	profile: ["profile"] as const,
 	security: ["security"] as const,
 	verification: ["verification"] as const,

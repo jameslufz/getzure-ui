@@ -8,6 +8,8 @@ import { T } from "@/app/i18n/T";
 import { useLanguage } from "@/app/i18n/useLanguage";
 import { FormField } from "@/app/components/FormField";
 import { ImageUploader, TExistingImage } from "@/app/components/ImageUploader";
+import { FormSkeleton } from "@/app/components/skeletons/PageSkeletons";
+import { QuantityInput } from "@/app/components/QuantityInput";
 import { QueryNotice } from "@/app/components/QueryNotice";
 import { Select } from "@/app/components/Select";
 import { useInvalidate } from "@/app/hooks/useInvalidate";
@@ -85,7 +87,7 @@ export const ProductForm: TProductForm = ({ productId, onSaved }) => {
 	if (queryView === "failed")
 		return <QueryNotice kind="failed" onRetry={() => detail.refetch()} />
 	if (detail.data === undefined || detail.data === null) {
-		return <div className="h-64 animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800" />
+		return <FormSkeleton count={5} />
 	}
 
 	return <ProductFormBody product={detail.data} onSaved={onSaved} />
@@ -293,17 +295,16 @@ const ProductFormBody: TProductFormBody = ({ product, onSaved }) => {
 							/^\d+$/.test(value) && Number(value) <= PRODUCT_STOCK_MAX,
 					}}
 					render={({ field }) => (
-						<NumericFormat
-							thousandSeparator=","
-							decimalScale={0}
-							allowNegative={false}
-							inputMode="numeric"
-							placeholder="0"
-							value={field.value}
-							onValueChange={(values) => field.onChange(values.value)}
+						<QuantityInput
+							label="Stock"
+							value={field.value ?? ""}
+							onChange={field.onChange}
 							onBlur={field.onBlur}
-							aria-invalid={!!errors.stock}
-							className="input"
+							min={0}
+							max={PRODUCT_STOCK_MAX}
+							thousandSeparator
+							placeholder="0"
+							invalid={!!errors.stock}
 						/>
 					)}
 				/>

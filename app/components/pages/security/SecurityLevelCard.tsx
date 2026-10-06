@@ -14,42 +14,49 @@ type TLevelStyle = {
 }
 
 const LEVEL_STYLES: Record<TSecurityLevel, TLevelStyle> = {
-	low: {
+	very_low: {
 		filledBars: 1,
 		text: "text-rose-600 dark:text-rose-400",
 		bar: "bg-rose-500",
-		label: <T k="security.level.low">ต่ำ</T>,
+		label: <T k="security.level.veryLow">ต่ำมาก</T>,
 		hint: (
-			<T k="security.level.low.hint">
+			<T k="security.level.veryLow.hint">
 				เปิดใช้งานความปลอดภัยอย่างน้อยหนึ่งแบบเพื่อปกป้องบัญชีของคุณ
 			</T>
 		),
 	},
-	medium: {
+	low: {
 		filledBars: 2,
 		text: "text-orange-600 dark:text-orange-400",
 		bar: "bg-orange-500",
-		label: <T k="security.level.medium">กลาง</T>,
-		hint: (
-			<T k="security.level.medium.hint">
-				เปิดใช้งานให้ครบทุกวิธีที่ใช้ได้เพื่อความปลอดภัยสูงสุด
-			</T>
-		),
+		label: <T k="security.level.low">ต่ำ</T>,
+		hint: <T k="security.level.low.hint">เปิดใช้งานเพิ่มอีกเพื่อให้บัญชีของคุณปลอดภัยขึ้น</T>,
 	},
 	high: {
 		filledBars: 3,
-		text: "text-emerald-600 dark:text-emerald-400",
-		bar: "bg-emerald-500",
+		text: "text-lime-600 dark:text-lime-400",
+		bar: "bg-lime-500",
 		label: <T k="security.level.high">สูง</T>,
 		hint: (
 			<T k="security.level.high.hint">
+				เกือบครบแล้ว เปิดใช้งานให้ครบทุกวิธีที่ใช้ได้เพื่อความปลอดภัยสูงสุด
+			</T>
+		),
+	},
+	very_high: {
+		filledBars: 4,
+		text: "text-emerald-600 dark:text-emerald-400",
+		bar: "bg-emerald-500",
+		label: <T k="security.level.veryHigh">สูงมาก</T>,
+		hint: (
+			<T k="security.level.veryHigh.hint">
 				บัญชีของคุณเปิดใช้งานความปลอดภัยครบทุกวิธีที่ใช้ได้แล้ว
 			</T>
 		),
 	},
 }
 
-const TOTAL_BARS = 3
+const TOTAL_BARS = 4
 
 export const SecurityLevelCard: TSecurityLevelCard = ({ level }) => {
 	const style = LEVEL_STYLES[level]

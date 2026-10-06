@@ -8,6 +8,7 @@ import { ImageOff, LayoutGrid, List, Pencil, Trash2 } from "lucide-react";
 import { T } from "@/app/i18n/T";
 import { Modal } from "@/app/components/Modal";
 import { Pagination } from "@/app/components/Pagination";
+import { Skeleton } from "@/app/components/Skeleton";
 import { QueryNotice } from "@/app/components/QueryNotice";
 import { useInvalidate } from "@/app/hooks/useInvalidate";
 import { formatAmount } from "@/app/lib/format";
@@ -52,6 +53,8 @@ type TReadServerView = () => TView
 
 type TProductActionsProps = { product: TProduct; onDelete: (product: TProduct) => void }
 type TProductActions = (props: TProductActionsProps) => ReactNode
+type TProductsTableSkeletonProps = { rows: number }
+type TProductsTableSkeleton = (props: TProductsTableSkeletonProps) => ReactNode
 type TProductThumbProps = { product: TProduct; className: string }
 type TProductThumb = (props: TProductThumbProps) => ReactNode
 type TStockBadgeProps = { stock: number }
@@ -91,6 +94,75 @@ const subscribeView: TSubscribeView = (onChange) => {
 
 // The server has no storage, so it (and the first render in the browser) starts from "grid".
 const readServerView: TReadServerView = () => "grid"
+
+type TTableView = () => ReactNode
+
+const ProductsTableHead: TTableView = () => {
+	return (
+		<thead className="bg-zinc-50 text-left text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+			<tr>
+				<th className="w-16 px-4 py-3 font-medium" />
+				<th className="px-4 py-3 font-medium">
+					<T k="products.list.colName">สินค้า</T>
+				</th>
+				<th className="px-4 py-3 font-medium">
+					<T k="products.list.colCategory">หมวดหมู่</T>
+				</th>
+				<th className="px-4 py-3 text-right font-medium">
+					<T k="products.list.colPrice">ราคา</T>
+				</th>
+				<th className="px-4 py-3 font-medium">
+					<T k="products.list.colStock">สต็อก</T>
+				</th>
+				<th className="px-4 py-3 font-medium">
+					<T k="products.list.colCreated">สร้างเมื่อ</T>
+				</th>
+				<th className="w-24 px-4 py-3" />
+			</tr>
+		</thead>
+	)
+}
+
+// Rows shaped like the real ones: a picture, the text columns, a stock badge and two actions.
+const ProductsTableSkeleton: TProductsTableSkeleton = ({ rows }) => {
+	return (
+		<div className="card overflow-x-auto p-0" aria-busy="true">
+			<table className="w-full text-sm">
+				<ProductsTableHead />
+				<tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+					{Array.from({ length: rows }, (_, row) => (
+						<tr key={row}>
+							<td className="px-4 py-2">
+								<Skeleton className="h-10 w-10 rounded-md" />
+							</td>
+							<td className="px-4 py-2">
+								<Skeleton className="h-4 w-40" />
+							</td>
+							<td className="px-4 py-2">
+								<Skeleton className="h-4 w-56" />
+							</td>
+							<td className="px-4 py-2">
+								<Skeleton className="ml-auto h-4 w-24" />
+							</td>
+							<td className="px-4 py-2">
+								<Skeleton className="h-5 w-20 rounded-full" />
+							</td>
+							<td className="px-4 py-2">
+								<Skeleton className="h-4 w-20" />
+							</td>
+							<td className="px-4 py-2">
+								<div className="flex gap-1">
+									<Skeleton className="h-8 w-8 rounded-md" />
+									<Skeleton className="h-8 w-8 rounded-md" />
+								</div>
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
+	)
+}
 
 const ProductThumb: TProductThumb = ({ product, className }) => {
 	return (
@@ -262,25 +334,21 @@ export const ProductBrowser: TProductBrowser = ({ categoryId, pageSize }) => {
 						aria-hidden="true"
 					>
 						{Array.from({ length: pageSize }, (_, index) => (
-							<li key={index} className="card flex animate-pulse flex-col gap-3 p-0">
-								<div className="aspect-4/3 rounded-t-xl bg-zinc-200 dark:bg-zinc-800" />
+							<li
+								key={index}
+								className="card flex flex-col gap-3 overflow-hidden p-0"
+							>
+								<Skeleton className="aspect-4/3 rounded-none" />
 								<div className="space-y-2 p-4">
-									<div className="h-3 w-1/2 rounded bg-zinc-200 dark:bg-zinc-800" />
-									<div className="h-4 w-3/4 rounded bg-zinc-200 dark:bg-zinc-800" />
-									<div className="h-6 w-1/3 rounded bg-zinc-200 dark:bg-zinc-800" />
+									<Skeleton className="h-3 w-1/2" />
+									<Skeleton className="h-4 w-3/4" />
+									<Skeleton className="h-6 w-1/3" />
 								</div>
 							</li>
 						))}
 					</ul>
 				) : (
-					<div className="card animate-pulse space-y-3" aria-hidden="true">
-						{Array.from({ length: pageSize }, (_, index) => (
-							<div
-								key={index}
-								className="h-12 rounded bg-zinc-200 dark:bg-zinc-800"
-							/>
-						))}
-					</div>
+					<ProductsTableSkeleton rows={pageSize} />
 				)
 			) : data === null || data.items.length === 0 ? (
 				<div className="card text-center text-sm text-zinc-500 dark:text-zinc-400">
@@ -327,27 +395,7 @@ export const ProductBrowser: TProductBrowser = ({ categoryId, pageSize }) => {
 					) : (
 						<div className="card overflow-x-auto p-0">
 							<table className="w-full text-sm">
-								<thead className="bg-zinc-50 text-left text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-									<tr>
-										<th className="w-16 px-4 py-3 font-medium" />
-										<th className="px-4 py-3 font-medium">
-											<T k="products.list.colName">สินค้า</T>
-										</th>
-										<th className="px-4 py-3 font-medium">
-											<T k="products.list.colCategory">หมวดหมู่</T>
-										</th>
-										<th className="px-4 py-3 text-right font-medium">
-											<T k="products.list.colPrice">ราคา</T>
-										</th>
-										<th className="px-4 py-3 font-medium">
-											<T k="products.list.colStock">สต็อก</T>
-										</th>
-										<th className="px-4 py-3 font-medium">
-											<T k="products.list.colCreated">สร้างเมื่อ</T>
-										</th>
-										<th className="w-24 px-4 py-3" />
-									</tr>
-								</thead>
+								<ProductsTableHead />
 								<tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
 									{data.items.map((product) => (
 										<tr key={product.id}>

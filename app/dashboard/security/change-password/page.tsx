@@ -7,6 +7,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { T } from "@/app/i18n/T";
 import { FormField } from "@/app/components/FormField";
 import { Breadcrumb, PERSONAL_CRUMB } from "@/app/components/Breadcrumb";
+import { FormSkeleton } from "@/app/components/skeletons/PageSkeletons";
 import { PageHeader } from "@/app/components/PageHeader";
 import { QueryNotice } from "@/app/components/QueryNotice";
 import { useSecurityStatus } from "@/app/hooks/useSecurityStatus";
@@ -144,7 +145,7 @@ const ChangePasswordPage: TChangePasswordPage = () => {
 				)}
 
 				{status === undefined || view === "loading" ? (
-					<div className="h-24 animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800" />
+					<FormSkeleton count={2} />
 				) : status === null || view === "failed" ? (
 					<QueryNotice
 						kind={view === "failed" ? "failed" : "unavailable"}

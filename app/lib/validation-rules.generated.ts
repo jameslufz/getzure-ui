@@ -13,10 +13,10 @@ export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u
 export const PRODUCT_PRICE_PATTERN = /^\d{1,8}(\.\d{1,2})?$/u
 
 export const NAME_MAX_LENGTH = 100
-export const HOUSE_NO_MAX_LENGTH = 30
+export const HOUSE_NO_MAX_LENGTH = 100
 export const STREET_MAX_LENGTH = 100
 export const AREA_NAME_MAX_LENGTH = 60
-export const KYC_IMAGE_MAX_BYTES = 5242880
+export const KYC_IMAGE_MAX_BYTES = 10485760
 export const PRODUCT_NAME_MAX_LENGTH = 120
 export const PRODUCT_IMAGE_MAX_COUNT = 5
 export const PRODUCT_IMAGE_MAX_BYTES = 5242880
@@ -29,6 +29,8 @@ export const ORDER_EXPIRY_MINUTES = 15
 export const ORDER_PAGE_SIZES = [25, 50, 75, 100] as const
 export const PRODUCT_STOCK_MAX = 99999
 
+export const VAT_RATE_PERCENT = 7
+export const SHOW_VAT_TO_CREATOR = false
 export const FEE_MINIMUM_SATANG = 1000
 export const FEE_TIERS = [
 	{ fromSatang: 100000, rateBps: 400 },

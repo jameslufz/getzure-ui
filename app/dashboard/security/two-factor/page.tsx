@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { T } from "@/app/i18n/T";
 import { Breadcrumb, PERSONAL_CRUMB } from "@/app/components/Breadcrumb";
+import { TwoFactorSkeleton } from "@/app/components/skeletons/PageSkeletons";
 import { PageHeader } from "@/app/components/PageHeader";
 import { QueryNotice } from "@/app/components/QueryNotice";
 import { AuthenticatorCard } from "@/app/components/pages/security/AuthenticatorCard";
@@ -45,7 +46,7 @@ const TwoFactorPage: TTwoFactorPage = () => {
 			/>
 
 			{status === undefined || view === "loading" ? (
-				<div className="card h-32 animate-pulse" />
+				<TwoFactorSkeleton />
 			) : status === null || view === "failed" ? (
 				<QueryNotice kind={view === "failed" ? "failed" : "unavailable"} onRetry={retry} />
 			) : needsPassword ? (

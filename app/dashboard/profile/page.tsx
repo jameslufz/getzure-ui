@@ -6,14 +6,15 @@ import Link from "next/link";
 import { Camera, IdCard, Pencil } from "lucide-react";
 import { T } from "@/app/i18n/T";
 import { AvatarCropper } from "@/app/components/AvatarCropper";
+import { AvatarContent } from "@/app/components/AvatarContent";
 import { BankEditForm } from "@/app/components/BankEditForm";
 import { Breadcrumb, PERSONAL_CRUMB } from "@/app/components/Breadcrumb";
 import { PageHeader } from "@/app/components/PageHeader";
 import { QueryNotice } from "@/app/components/QueryNotice";
 import { useInvalidate } from "@/app/hooks/useInvalidate";
+import { ProfileSkeleton } from "@/app/components/skeletons/PageSkeletons";
 import { VerifiedMark } from "@/app/components/VerifiedMark";
 import { BANK_LABELS } from "@/app/lib/banks";
-import { clientServiceUrl } from "@/app/lib/client-service";
 import { parseApiErrorKind, SignupApiError } from "@/app/lib/signup-errors";
 import { fetchServiceJson, getQueryView } from "@/app/lib/query-fetch";
 import { queryKeys } from "@/app/lib/query-keys";
@@ -26,7 +27,7 @@ import {
 	TBankCode,
 } from "@/app/lib/validation"
 
-type TProfileStatus = "none" | "pending" | "verified"
+type TProfileStatus = "none" | "pending" | "verified" | "rejected"
 type TProfileAddress = {
 	houseNo: string
 	street: string
@@ -44,6 +45,7 @@ type TProfile = {
 	status: TProfileStatus
 	official: boolean
 	imageVersion?: string
+	rejectReason?: string | null
 	personalIdMask?: string
 	personalIdExp?: string
 	address?: TProfileAddress
@@ -54,8 +56,6 @@ type TRowProps = { label: ReactNode; children: ReactNode }
 type TRow = (props: TRowProps) => ReactNode
 type TStatusBadgeProps = { status: TProfileStatus }
 type TStatusBadge = (props: TStatusBadgeProps) => ReactNode
-type TAvatarContentProps = { imageVersion?: string; initial: string }
-type TAvatarContent = (props: TAvatarContentProps) => ReactNode
 type TJoinAddress = (address: TProfileAddress) => string
 type TIsAllowedPhoto = (file: File) => boolean
 
@@ -79,22 +79,6 @@ const joinAddress: TJoinAddress = (address) => {
 	return parts.filter(Boolean).join(" ")
 }
 
-// Falls back to the initial when there is no picture or it can't be loaded.
-const AvatarContent: TAvatarContent = ({ imageVersion, initial }) => {
-	const [failed, setFailed] = useState(false)
-	if (!imageVersion || failed) return initial
-
-	return (
-		// eslint-disable-next-line @next/next/no-img-element
-		<img
-			src={`${clientServiceUrl("/profile/image")}?v=${imageVersion}`}
-			alt=""
-			onError={() => setFailed(true)}
-			className="h-full w-full object-cover"
-		/>
-	)
-}
-
 const Row: TRow = ({ label, children }) => {
 	return (
 		<div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">
@@ -111,6 +95,13 @@ const StatusBadge: TStatusBadge = ({ status }) => {
 		return (
 			<span className="badge-success">
 				<T k="profile.status.verified">ยืนยันตัวตนแล้ว</T>
+			</span>
+		)
+	}
+	if (status === "rejected") {
+		return (
+			<span className="badge-danger">
+				<T k="profile.status.rejected">ไม่ผ่านการตรวจสอบ</T>
 			</span>
 		)
 	}
@@ -197,9 +188,7 @@ const ProfilePage: TProfilePage = () => {
 				onConfirm={handleUpload}
 			/>
 
-			{profile === undefined && queryView === "loading" && (
-				<div className="card h-64 animate-pulse" />
-			)}
+			{profile === undefined && queryView === "loading" && <ProfileSkeleton />}
 
 			{queryView === "failed" && (
 				<QueryNotice kind="failed" onRetry={() => query.refetch()} />
@@ -315,6 +304,9 @@ const ProfilePage: TProfilePage = () => {
 							</h2>
 							<StatusBadge status={profile.status} />
 						</div>
+						{profile.status === "rejected" && profile.rejectReason && (
+							<p className="alert-error mt-3">{profile.rejectReason}</p>
+						)}
 						{profile.status !== "none" && (
 							<dl className="divide-y divide-zinc-200 dark:divide-zinc-700">
 								<Row label={<T k="profile.idNo">เลขบัตรประชาชน</T>}>
@@ -338,6 +330,8 @@ const ProfilePage: TProfilePage = () => {
 								<IdCard className="h-4 w-4" />
 								{profile.status === "none" ? (
 									<T k="profile.verify">ยืนยันตัวตน</T>
+								) : profile.status === "rejected" ? (
+									<T k="profile.verifyRetry">ส่งข้อมูลใหม่</T>
 								) : (
 									<T k="profile.verifyAgain">ดูหรือส่งข้อมูลใหม่</T>
 								)}

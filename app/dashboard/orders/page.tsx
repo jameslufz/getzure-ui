@@ -8,6 +8,7 @@ import { T } from "@/app/i18n/T";
 import { Breadcrumb, PAYMENT_CRUMB } from "@/app/components/Breadcrumb";
 import { PageHeader } from "@/app/components/PageHeader";
 import { Pagination } from "@/app/components/Pagination";
+import { Skeleton } from "@/app/components/Skeleton";
 import { QueryNotice } from "@/app/components/QueryNotice";
 import { Select } from "@/app/components/Select";
 import { formatAmount } from "@/app/lib/format";
@@ -94,7 +95,7 @@ const OrdersPage: TOrdersPage = () => {
 								<T k="orders.list.colFee">ค่าธรรมเนียม</T>
 							</th>
 							<th className="px-4 py-3 text-right font-medium">
-								<T k="orders.list.colNet">สุทธิ</T>
+								<T k="orders.list.colNet">ยอดที่ได้รับ</T>
 							</th>
 							<th className="px-4 py-3 font-medium">
 								<T k="orders.list.colStatus">สถานะ</T>
@@ -107,9 +108,29 @@ const OrdersPage: TOrdersPage = () => {
 					<tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
 						{queryView === "loading" || data === undefined ? (
 							Array.from({ length: SKELETON_ROWS }, (_, index) => (
-								<tr key={index} className="animate-pulse" aria-hidden="true">
-									<td colSpan={8} className="px-4 py-3">
-										<div className="h-5 rounded bg-zinc-200 dark:bg-zinc-800" />
+								<tr key={index}>
+									<td className="px-4 py-3">
+										<Skeleton className="h-4 w-20" />
+									</td>
+									<td className="px-4 py-3">
+										<Skeleton className="ml-auto h-4 w-6" />
+									</td>
+									<td className="px-4 py-3">
+										<Skeleton className="h-4 w-20" />
+									</td>
+									{[28, 24, 28].map((width, cell) => (
+										<td key={cell} className="px-4 py-3">
+											<Skeleton
+												className="ml-auto h-4"
+												style={{ width: width * 4 }}
+											/>
+										</td>
+									))}
+									<td className="px-4 py-3">
+										<Skeleton className="h-5 w-16 rounded-full" />
+									</td>
+									<td className="px-4 py-3">
+										<Skeleton className="h-4 w-36" />
 									</td>
 								</tr>
 							))

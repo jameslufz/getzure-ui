@@ -10,6 +10,7 @@ type TInvalidations = {
 	afterProfileChange: TInvalidate
 	afterVerificationSubmit: TInvalidate
 	afterSecurityChange: TInvalidate
+	afterNotificationRead: TInvalidate
 }
 type TUseInvalidate = () => TInvalidations
 
@@ -32,13 +33,27 @@ export const useInvalidate: TUseInvalidate = () => {
 				client.invalidateQueries({ queryKey: queryKeys.categories.all }),
 			])
 		},
-		afterProfileChange: () => client.invalidateQueries({ queryKey: queryKeys.profile }),
+		// Profile, identity and security changes can start or end a reminder, so it is asked again.
+		afterProfileChange: async () => {
+			await Promise.all([
+				client.invalidateQueries({ queryKey: queryKeys.profile }),
+				client.invalidateQueries({ queryKey: queryKeys.notifications }),
+			])
+		},
 		afterVerificationSubmit: async () => {
 			await Promise.all([
 				client.invalidateQueries({ queryKey: queryKeys.verification }),
 				client.invalidateQueries({ queryKey: queryKeys.profile }),
+				client.invalidateQueries({ queryKey: queryKeys.notifications }),
 			])
 		},
-		afterSecurityChange: () => client.invalidateQueries({ queryKey: queryKeys.security }),
+		afterSecurityChange: async () => {
+			await Promise.all([
+				client.invalidateQueries({ queryKey: queryKeys.security }),
+				client.invalidateQueries({ queryKey: queryKeys.notifications }),
+			])
+		},
+		afterNotificationRead: () =>
+			client.invalidateQueries({ queryKey: queryKeys.notifications }),
 	}
 }

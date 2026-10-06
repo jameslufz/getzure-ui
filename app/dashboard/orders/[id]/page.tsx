@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Clock, ImageOff, ShieldX } from "lucide-react";
 import { T } from "@/app/i18n/T";
 import { Breadcrumb, PAYMENT_CRUMB, TCrumb } from "@/app/components/Breadcrumb";
+import { OrderSkeleton } from "@/app/components/skeletons/PageSkeletons";
 import { PageHeader } from "@/app/components/PageHeader";
 import { BANK_LABELS } from "@/app/lib/banks";
 import copy from "@/app/lib/copy";
@@ -121,7 +122,7 @@ const OrderPage: TOrderPage = () => {
 			/>
 
 			{order === undefined ? (
-				<div className="card h-40 animate-pulse" />
+				<OrderSkeleton />
 			) : (
 				<>
 					<div className="card space-y-4">
@@ -178,7 +179,7 @@ const OrderPage: TOrderPage = () => {
 								<dl className="space-y-1 rounded-md bg-zinc-50 p-3 text-sm dark:bg-zinc-800/50">
 									<div className="flex justify-between">
 										<dt className="text-zinc-500 dark:text-zinc-400">
-											<T k="orders.view.fee">ค่าธรรมเนียม (รวม VAT)</T>
+											<T k="orders.view.fee">ค่าธรรมเนียม</T>
 										</dt>
 										<dd>{formatAmount(Number(order.fee), order.currency)}</dd>
 									</div>
