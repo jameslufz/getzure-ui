@@ -8,6 +8,8 @@ import { authClient } from "@/app/lib/auth-client";
 import { clearClientSession, handleSessionExpired } from "@/app/lib/session";
 import { Menu, X } from "lucide-react";
 import clsx from "clsx";
+import InstallAppButton from "../components/InstallAppButton";
+import Logo from "../components/Logo";
 import Navbar from "../components/main-layout/Navbar";
 import { GlobalSearch } from "@/app/components/main-layout/GlobalSearch";
 import { NotificationBell } from "@/app/components/main-layout/NotificationBell";
@@ -68,14 +70,7 @@ const DashboardLayout: TDashboardLayout = ({ children }) => {
 				)}
 			>
 				<div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-zinc-200 px-5 dark:border-zinc-800">
-					<div className="flex items-center gap-2">
-						<div className="flex h-8 w-8 items-center justify-center rounded-md bg-teal-600 text-sm font-bold text-white">
-							G
-						</div>
-						<span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-							Getzure
-						</span>
-					</div>
+					<Logo className="h-8" />
 					<button
 						aria-label="Close menu"
 						onClick={() => setMobileNavOpen(false)}
@@ -106,6 +101,7 @@ const DashboardLayout: TDashboardLayout = ({ children }) => {
 					</button>
 					<div className="ml-auto flex items-center gap-3">
 						<GlobalSearch />
+						<InstallAppButton />
 						<LanguageToggle />
 						<ThemeToggle />
 						<NotificationBell />

@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import Logo from "@/app/components/Logo";
 import { ThemeToggle } from "@/app/components/ThemeToggle";
 import { LanguageToggle } from "@/app/components/LanguageToggle";
 
@@ -21,7 +22,7 @@ export const AuthShell: TAuthShell = ({ title, subtitle, footer, children }) => 
 
 			<div className="w-full max-w-sm">
 				<div className="mb-8 flex flex-col items-center gap-3 text-center">
-					<div className="logo-mark h-10 w-10 text-sm">G</div>
+					<Logo className="h-10" />
 					<div>
 						<h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
 							{title}

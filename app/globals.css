@@ -88,10 +88,6 @@ button {
 	.link {
 		@apply font-medium text-teal-600 dark:text-teal-400;
 	}
-
-	.logo-mark {
-		@apply flex items-center justify-center rounded-md bg-teal-600 font-bold text-white;
-	}
 }
 
 @layer components {
@@ -179,5 +175,77 @@ button {
 		.toast-wrap[data-leaving="true"] .toast {
 			transition-duration: 1ms;
 		}
+	}
+}
+
+/* Landing hero: the scene is always dark, whatever the theme. */
+.landing-bg {
+	background:
+		radial-gradient(55% 55% at 14% 6%, rgb(15 118 110 / 0.6), transparent 70%),
+		radial-gradient(45% 55% at 74% 52%, rgb(20 184 166 / 0.4), transparent 70%),
+		radial-gradient(40% 45% at 96% 0%, rgb(45 212 191 / 0.3), transparent 70%),
+		radial-gradient(70% 50% at 50% 100%, rgb(13 148 136 / 0.3), transparent 70%),
+		radial-gradient(45% 50% at 92% 88%, rgb(125 211 252 / 0.42), transparent 72%),
+		radial-gradient(30% 35% at 60% 8%, rgb(186 230 253 / 0.22), transparent 70%),
+		linear-gradient(180deg, #06262e 0%, #041a20 55%, #020a0d 100%);
+}
+
+.landing-beam {
+	background: linear-gradient(180deg, rgb(240 249 255), rgb(186 230 253 / 0.75) 26%, rgb(153 246 228 / 0.6) 50%, rgb(20 184 166 / 0.25) 78%, transparent);
+	filter: blur(22px);
+	transform: skewX(-8deg);
+}
+
+.landing-floor {
+	background-image:
+		linear-gradient(rgb(153 246 228 / 0.2) 1px, transparent 1px),
+		linear-gradient(90deg, rgb(153 246 228 / 0.2) 1px, transparent 1px);
+	background-size: 3.5rem 3.5rem;
+	transform: perspective(700px) rotateX(64deg);
+	transform-origin: bottom;
+	mask-image: linear-gradient(to top, black 10%, transparent 85%);
+}
+
+.demo-float {
+	animation: demo-float 6s ease-in-out infinite;
+}
+
+@keyframes demo-float {
+	50% {
+		transform: translateY(-0.75rem);
+	}
+}
+
+/* A ring that grows from the mouse tip each time it clicks. */
+.demo-cursor::after {
+	content: "";
+	position: absolute;
+	top: -0.7rem;
+	left: -0.7rem;
+	width: 1.4rem;
+	height: 1.4rem;
+	border: 2px solid rgb(186 230 253 / 0.95);
+	border-radius: 9999px;
+	opacity: 0;
+}
+
+.demo-cursor.demo-click::after {
+	animation: demo-click 0.5s ease-out;
+}
+
+@keyframes demo-click {
+	from {
+		transform: scale(0.3);
+		opacity: 0.9;
+	}
+	to {
+		transform: scale(1.8);
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.demo-float {
+		animation: none;
 	}
 }
